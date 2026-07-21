@@ -379,6 +379,10 @@
     color: var(--color-info);
   }
 
+  .nothing-nav-item[data-tab="about"][data-active="true"] .nav-icon {
+    color: var(--color-accent);
+  }
+
   .nothing-nav-badge {
     font-family: var(--font-mono);
     font-size: 10px;

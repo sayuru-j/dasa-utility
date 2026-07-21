@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Windows;
 using System.Windows.Interop;
@@ -92,6 +93,8 @@ public partial class MainWindow : Window, IWindowHost
             core.Settings.AreDefaultContextMenusEnabled = true;
             core.Settings.AreDevToolsEnabled = true;
             core.Settings.IsStatusBarEnabled = false;
+            core.NavigationStarting += OnExternalNavigationStarting;
+            core.NewWindowRequested += OnNewWindowRequested;
 
             _bridge = new NativeIpcBridge(
                 WebView,
@@ -128,6 +131,58 @@ public partial class MainWindow : Window, IWindowHost
                 "D.A.S.A",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
+        }
+    }
+
+    private void OnExternalNavigationStarting(object? sender, CoreWebView2NavigationStartingEventArgs args)
+    {
+        if (!ShouldOpenExternally(args.Uri))
+        {
+            return;
+        }
+
+        args.Cancel = true;
+        TryOpenExternalUrl(args.Uri);
+    }
+
+    private void OnNewWindowRequested(object? sender, CoreWebView2NewWindowRequestedEventArgs args)
+    {
+        args.Handled = true;
+        TryOpenExternalUrl(args.Uri);
+    }
+
+    private static bool ShouldOpenExternally(string uri)
+    {
+        if (!Uri.TryCreate(uri, UriKind.Absolute, out var parsed))
+        {
+            return false;
+        }
+
+        if (parsed.Scheme is not ("http" or "https"))
+        {
+            return false;
+        }
+
+        var host = parsed.Host;
+        return !host.Equals("localhost", StringComparison.OrdinalIgnoreCase)
+            && !host.EndsWith(".localhost", StringComparison.OrdinalIgnoreCase)
+            && !host.Equals(WebViewUiLoader.VirtualHostName, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static void TryOpenExternalUrl(string uri)
+    {
+        if (string.IsNullOrWhiteSpace(uri))
+        {
+            return;
+        }
+
+        try
+        {
+            Process.Start(new ProcessStartInfo(uri) { UseShellExecute = true });
+        }
+        catch
+        {
+            // ignored
         }
     }
 

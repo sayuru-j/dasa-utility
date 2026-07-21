@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion'
-import { FolderCog, LayoutDashboard, Settings as SettingsIcon } from 'lucide-react'
+import { FolderCog, Info, LayoutDashboard, Settings as SettingsIcon } from 'lucide-react'
+import { AboutPanel } from './components/AboutPanel'
 import { Dashboard } from './components/Dashboard'
 import { RulesEditor } from './components/RulesEditor'
 import { SettingsPanel } from './components/SettingsPanel'
 import { Sidebar } from './components/Sidebar'
 import { TitleBar } from './components/TitleBar'
 import { fadeIn, pageVariants, springSnappy } from './lib/motion'
+import type { TabId } from './lib/colors'
 import { isNativeHostAvailable, nativeBridge, subscribe } from './services/nativeBridge'
 import type {
   ActivityHistoryPayload,
@@ -16,8 +18,6 @@ import type {
   SettingsViewModel,
   StateSnapshot,
 } from './types'
-
-type TabId = 'dashboard' | 'rules' | 'settings'
 
 const defaultSettings: SettingsViewModel = {
   watchFolder: '',
@@ -159,6 +159,7 @@ export default function App() {
       { id: 'dashboard' as const, label: 'Dashboard', icon: LayoutDashboard },
       { id: 'rules' as const, label: 'Rules', icon: FolderCog },
       { id: 'settings' as const, label: 'Settings', icon: SettingsIcon },
+      { id: 'about' as const, label: 'About', icon: Info },
     ],
     [],
   )
@@ -236,6 +237,7 @@ export default function App() {
                     onPickFolder={(purpose) => nativeBridge.pickFolder(purpose)}
                   />
                 )}
+                {tab === 'about' && <AboutPanel />}
               </motion.div>
             </AnimatePresence>
           </main>

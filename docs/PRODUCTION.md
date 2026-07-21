@@ -2,9 +2,6 @@
 
 This document describes how to build, package, publish, and maintain **D.A.S.A** for production use and GitHub distribution.
 
-**Author:** [Sayuru .J Silva](https://github.com/sayuru-j)  
-**GitHub profile:** [github.com/sayuru-j](https://github.com/sayuru-j)  
-**Repository:** [github.com/sayuru-j/dasa-utility](https://github.com/sayuru-j/dasa-utility)  
 **License:** [MIT](../LICENSE) — open source, built for fun.
 
 ---
@@ -17,12 +14,11 @@ This document describes how to build, package, publish, and maintain **D.A.S.A**
 4. [Verify the build](#verify-the-build)
 5. [Publishing to GitHub](#publishing-to-github)
 6. [End-user installation](#end-user-installation)
-7. [GitHub Actions CI](#github-actions-ci)
-8. [Secrets & security](#secrets--security)
-9. [Optional: code signing](#optional-code-signing)
-10. [Optional: installer (MSIX / Inno Setup)](#optional-installer-msix--inno-setup)
-11. [Updating a release](#updating-a-release)
-12. [Support matrix](#support-matrix)
+7. [Secrets & security](#secrets--security)
+8. [Optional: code signing](#optional-code-signing)
+9. [Optional: installer (MSIX / Inno Setup)](#optional-installer-msix--inno-setup)
+10. [Updating a release](#updating-a-release)
+11. [Support matrix](#support-matrix)
 
 ---
 
@@ -130,24 +126,32 @@ cd src\DASA.Host\publish
 Confirm:
 
 1. App opens (no white screen).
-2. Dashboard, Rules, and Settings tabs work.
-3. App minimizes to tray on close.
-4. Tray icon shows the red D.A.S.A icon.
+2. Dashboard, Rules, Settings, and About tabs work.
+3. Move notifications appear at the screen edge when enabled (Settings).
+4. App minimizes to tray on close.
+5. Tray icon shows the red D.A.S.A icon.
+6. Maximized window respects the taskbar work area.
 
 Test on a second user account or VM if possible to catch path/permission issues.
+
+### Release media
+
+Attach or link assets from [`docs/media/`](../docs/media/) in GitHub Releases:
+
+| Asset | File |
+|-------|------|
+| UI preview | `docs/media/demo.mp4` |
+| Dashboard (empty) | `docs/media/dasa-dashboard.png` |
+| Rules | `docs/media/dasa-rules.png` |
+| Settings | `docs/media/dasa-settings.png` |
+
+See [docs/README.md](../docs/README.md) for descriptions and capture notes.
 
 ---
 
 ## Publishing to GitHub
 
-### 1. Current repository
-
-This project is currently published at:
-
-- Repository: [github.com/sayuru-j/dasa-utility](https://github.com/sayuru-j/dasa-utility)
-- Owner profile: [github.com/sayuru-j](https://github.com/sayuru-j)
-
-Clone it with:
+### 1. Clone the repository
 
 ```powershell
 git clone https://github.com/sayuru-j/dasa-utility.git
@@ -175,7 +179,6 @@ On GitHub → **Settings**:
 |---------|----------------|
 | Default branch | `main` |
 | Branch protection | Require PR reviews for `main` (optional) |
-| Actions | Enabled (for CI workflow) |
 | Security → Dependabot | Enable for NuGet + npm |
 
 ### 4. Create a GitHub Release
@@ -209,6 +212,8 @@ Download Automation & Security Assistant for Windows.
 - Gemini-powered file sorting
 - User rules + AI rule discovery
 - Smart subfolders, wait time, activity undo
+- Screen-edge move notifications
+- About tab with version and project links
 
 **Author:** Sayuru .J Silva
 ```
@@ -219,7 +224,7 @@ Download Automation & Security Assistant for Windows.
 gh release create v1.0.0 `
   .\src\DASA.Host\DASA-v1.0.0-win-x64.zip `
   --title "D.A.S.A v1.0.0" `
-  --notes-file RELEASE_NOTES.md
+  --notes "See README for install steps and requirements."
 ```
 
 ---
@@ -250,29 +255,6 @@ gh release create v1.0.0 `
 1. Exit DASA from the tray menu (**Exit**).
 2. Delete the install folder.
 3. Optionally delete user data: `%LOCALAPPDATA%\DASA\`
-
----
-
-## GitHub Actions CI
-
-The repository includes `.github/workflows/build.yml`, which on every push/PR:
-
-- Builds the React UI (`npm ci` + `npm run build`)
-- Publishes the .NET host (`dotnet publish -c Release`)
-- Uploads the publish folder as a CI artifact (retained 7 days)
-
-CI artifacts are for **verification**, not public distribution. Official releases should still be built locally or from a tagged workflow, then uploaded manually to GitHub Releases until you add a release automation step.
-
-### Triggering a release build in CI
-
-Push a version tag:
-
-```powershell
-git tag v1.0.0
-git push origin v1.0.0
-```
-
-You can extend the workflow later to attach the zip automatically to GitHub Releases.
 
 ---
 
@@ -363,5 +345,3 @@ cd src\dasa-ui && npm ci && npm run build
 cd ..\DASA.Host && dotnet publish -c Release -r win-x64 -o .\publish
 Compress-Archive -Path .\publish\* -DestinationPath .\DASA-v1.0.0-win-x64.zip -Force
 ```
-
-**Author:** Sayuru .J Silva

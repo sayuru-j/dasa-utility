@@ -6,9 +6,7 @@
 
 An **open-source passion project**, built for fun. Use it, fork it, break it, improve it — contributions welcome.
 
-**Author:** [Sayuru .J Silva](https://github.com/sayuru-j)  
-**GitHub:** [sayuru-j](https://github.com/sayuru-j)  
-**Repository:** [sayuru-j/dasa-utility](https://github.com/sayuru-j/dasa-utility)
+**Author:** [Sayuru .J Silva](https://github.com/sayuru-j) · **Repository:** [sayuru-j/dasa-utility](https://github.com/sayuru-j/dasa-utility)
 
 ---
 
@@ -22,26 +20,37 @@ An **open-source passion project**, built for fun. Use it, fork it, break it, im
 - **Smart subfolders** — optional nested paths like `Movies/Shrek/Shrek.mp4`
 - **Wait time** — delay moving files so you can finish working with them first
 - **Undo moves** — restore files from the activity feed
-- **Tray-first UX** — custom title bar, Nothing OS–inspired UI, Framer Motion animations
+- **Move notifications** — optional screen-edge overlay when a file is sorted (open in Explorer, undo)
+- **Activity log** — infinite scroll with full history count
+- **Tray-first UX** — custom title bar, sidebar navigation, Nothing OS–inspired UI, Framer Motion animations
+- **About** — version, credits, and links to the repo and author
 - **Local-first** — settings, rules, and history stored on your machine; API key encrypted with Windows DPAPI
+
+## Preview
+
+<p align="center">
+  <video src="docs/media/demo.mp4" width="720" autoplay loop muted playsinline></video>
+</p>
 
 ## Screenshots
 
-### Dashboard — monitoring & activity
+<p align="center">
+  <img src="docs/media/dasa-dashboard.png" alt="Dashboard empty state" width="720" />
+  <br />
+  <em>Dashboard — empty state</em>
+</p>
 
-![D.A.S.A dashboard with active monitoring and activity log](docs/media/data-activity-log.png)
+<p align="center">
+  <img src="docs/media/dasa-rules.png" alt="Rules editor and AI discovery" width="720" />
+  <br />
+  <em>Rules — automation and AI rule discovery</em>
+</p>
 
-### Dashboard — empty state
-
-![D.A.S.A dashboard empty state](docs/media/dasa-dashboard.png)
-
-### Rules — automation & AI discovery
-
-![D.A.S.A rules view with AI rule discovery](docs/media/dasa-rules.png)
-
-### Settings
-
-![D.A.S.A settings — watch folder, sort root, AMSI, and taxonomy](docs/media/dasa-settings.png)
+<p align="center">
+  <img src="docs/media/dasa-settings.png" alt="Settings panel" width="720" />
+  <br />
+  <em>Settings — folders, features, and preferences</em>
+</p>
 
 ## Architecture
 
@@ -131,7 +140,7 @@ dotnet publish -c Release -r win-x64 --self-contained false -o .\publish
 
 The published folder contains `DASA.exe`, dependencies, `Assets\icon.ico`, and `ui\` (packaged frontend).
 
-For a full production guide — GitHub releases, signing, end-user install, and CI — see **[docs/PRODUCTION.md](docs/PRODUCTION.md)**.
+For a full production guide — GitHub releases, signing, and end-user install — see **[docs/PRODUCTION.md](docs/PRODUCTION.md)**. Screenshot and preview notes: **[docs/README.md](docs/README.md)**.
 
 ## Local data
 
@@ -158,17 +167,20 @@ All runtime data lives under `%LOCALAPPDATA%\DASA\`:
 
 | Direction | Message | Purpose |
 |-----------|---------|---------|
-| UI → Host | `SAVE_RULE` / `DELETE_RULE` / `REORDER_RULES` | Rule CRUD |
+| UI → Host | `SAVE_RULE` / `DELETE_RULE` / `REORDER_RULES` / `CLEAR_ALL_RULES` | Rule CRUD |
 | UI → Host | `UPDATE_SETTINGS` | Settings + API key |
 | UI → Host | `SET_MONITORING` | Pause/resume watcher |
 | UI → Host | `TRIGGER_MANUAL_SCAN` | Scan watch folder now |
 | UI → Host | `UNDO_MOVE` | Restore a moved file |
 | UI → Host | `CLEAR_ACTIVITY` | Clear activity history |
+| UI → Host | `GET_ACTIVITY_HISTORY` | Paginated activity log |
+| UI → Host | `OPEN_IN_EXPLORER` | Open path in File Explorer |
 | UI → Host | `DISCOVER_RULES` / `APPLY_DISCOVERED_RULES` | AI rule discovery |
 | UI → Host | `PICK_FOLDER` | Native folder picker |
 | UI → Host | `WINDOW_*` | Custom window chrome |
 | Host → UI | `FILE_PROCESSED` | New activity item |
 | Host → UI | `MALWARE_DETECTED` | Quarantine alert |
+| Host → UI | `ACTIVITY_HISTORY` | Paginated history page |
 | Host → UI | `STATE_SNAPSHOT` | Full app state on load |
 
 ## Security notes
@@ -194,12 +206,6 @@ This is a hobby project, but PRs and issues are welcome. If you fix a bug or add
 2. Keep changes focused.
 3. Open a pull request with a short description of what changed and why.
 
-Project links:
-
-- GitHub profile: [github.com/sayuru-j](https://github.com/sayuru-j)
-- Repository: [github.com/sayuru-j/dasa-utility](https://github.com/sayuru-j/dasa-utility)
-- Issues: [github.com/sayuru-j/dasa-utility/issues](https://github.com/sayuru-j/dasa-utility/issues)
-
 No corporate process — just don’t break the build and have fun with it.
 
 ## License
@@ -207,7 +213,3 @@ No corporate process — just don’t break the build and have fun with it.
 Released under the [MIT License](LICENSE).
 
 Copyright © 2026 Sayuru .J Silva
-
-## Documentation
-
-- [Production & GitHub release guide](docs/PRODUCTION.md)
