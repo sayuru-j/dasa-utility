@@ -4,9 +4,9 @@ import { FolderCog, LayoutDashboard, Settings as SettingsIcon } from 'lucide-rea
 import { Dashboard } from './components/Dashboard'
 import { RulesEditor } from './components/RulesEditor'
 import { SettingsPanel } from './components/SettingsPanel'
+import { Sidebar } from './components/Sidebar'
 import { TitleBar } from './components/TitleBar'
-import { fadeIn, navItem, navStagger, pageVariants } from './lib/motion'
-import { tabColors } from './lib/colors'
+import { fadeIn, pageVariants } from './lib/motion'
 import { isNativeHostAvailable, nativeBridge, subscribe } from './services/nativeBridge'
 import type {
   AutomationRule,
@@ -147,54 +147,15 @@ export default function App() {
         <TitleBar connected={connected} isMaximized={isMaximized} />
 
         <div className="flex min-h-0 flex-1">
-          <motion.nav
-            className="flex w-44 shrink-0 flex-col gap-0.5 border-r border-stroke bg-surface-alt p-2"
-            initial="initial"
-            animate="animate"
-            variants={navStagger}
-          >
-            <motion.p className="nothing-label mb-2 px-2 pt-1" variants={navItem}>
-              Menu
-            </motion.p>
-            {tabs.map(({ id, label, icon: Icon }) => {
-              const active = tab === id
-              return (
-                <motion.button
-                  key={id}
-                  type="button"
-                  className="nothing-nav-item relative"
-                  data-active={active ? 'true' : 'false'}
-                  data-tab={id}
-                  onClick={() => setTab(id)}
-                  variants={navItem}
-                  whileHover={{ x: 2 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  {active && (
-                    <motion.span
-                      layoutId="nav-active-bg"
-                      className="absolute inset-0 rounded border border-stroke bg-surface-elevated"
-                      transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-                      style={{
-                        zIndex: 0,
-                        boxShadow: `inset 2px 0 0 ${tabColors[id].accent}`,
-                      }}
-                    />
-                  )}
-                  {active && (
-                    <motion.span
-                      layoutId="nav-active-dot"
-                      className="absolute left-2.5 top-1/2 z-10 h-1 w-1 -translate-y-1/2 rounded-full"
-                      style={{ backgroundColor: tabColors[id].accent }}
-                      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                    />
-                  )}
-                  <Icon size={15} strokeWidth={1.5} className="nav-icon relative z-10 pl-2 transition-colors" />
-                  <span className="relative z-10">{label}</span>
-                </motion.button>
-              )
-            })}
-          </motion.nav>
+          <Sidebar
+            tab={tab}
+            onTabChange={setTab}
+            tabs={tabs}
+            monitoring={monitoring}
+            historyCount={history.length}
+            rulesCount={rules.length}
+            connected={connected}
+          />
 
           <main className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden p-6">
             <AnimatePresence mode="wait">

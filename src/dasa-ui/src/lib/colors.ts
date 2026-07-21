@@ -1,10 +1,10 @@
 export type SortSource = 'amsi' | 'rule' | 'gemini' | 'default' | string
 export type TabId = 'dashboard' | 'rules' | 'settings'
 
-export const tabColors: Record<TabId, { accent: string; dim: string; label: string }> = {
-  dashboard: { accent: '#4ade80', dim: '#4ade8026', label: 'Dashboard' },
-  rules: { accent: '#fbbf24', dim: '#fbbf2426', label: 'Rules' },
-  settings: { accent: '#38bdf8', dim: '#38bdf826', label: 'Settings' },
+export const tabColors: Record<TabId, { accent: string; dim: string; label: string; description: string }> = {
+  dashboard: { accent: '#4ade80', dim: '#4ade8026', label: 'Dashboard', description: 'Monitor & activity' },
+  rules: { accent: '#fbbf24', dim: '#fbbf2426', label: 'Rules', description: 'Sort automation' },
+  settings: { accent: '#38bdf8', dim: '#38bdf826', label: 'Settings', description: 'App preferences' },
 }
 
 export const sourceColors: Record<string, { label: string; tagClass: string }> = {
