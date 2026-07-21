@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-react'
-import { motion } from 'framer-motion'
-import { navItem, navStagger } from '../lib/motion'
+import { AnimatePresence, motion } from 'framer-motion'
+import { navItem, navStagger, badgePop, pulseDot } from '../lib/motion'
 import { tabColors, type TabId } from '../lib/colors'
 
 interface SidebarProps {
@@ -61,7 +61,8 @@ export function Sidebar({
               data-tab={id}
               onClick={() => onTabChange(id)}
               variants={navItem}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ x: 2 }}
+              whileTap={{ scale: 0.985 }}
             >
               {active && (
                 <motion.span
@@ -100,15 +101,35 @@ export function Sidebar({
               </span>
 
               {id === 'dashboard' && historyCount > 0 && (
-                <span className="nothing-nav-badge relative z-10" style={{ color: colors.accent, borderColor: `${colors.accent}44`, backgroundColor: colors.dim }}>
-                  {historyCount}
-                </span>
+                <AnimatePresence mode="popLayout">
+                  <motion.span
+                    key={historyCount}
+                    variants={badgePop}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    className="nothing-nav-badge relative z-10"
+                    style={{ color: colors.accent, borderColor: `${colors.accent}44`, backgroundColor: colors.dim }}
+                  >
+                    {historyCount}
+                  </motion.span>
+                </AnimatePresence>
               )}
 
               {id === 'rules' && rulesCount > 0 && (
-                <span className="nothing-nav-badge relative z-10" style={{ color: colors.accent, borderColor: `${colors.accent}44`, backgroundColor: colors.dim }}>
-                  {rulesCount}
-                </span>
+                <AnimatePresence mode="popLayout">
+                  <motion.span
+                    key={rulesCount}
+                    variants={badgePop}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    className="nothing-nav-badge relative z-10"
+                    style={{ color: colors.accent, borderColor: `${colors.accent}44`, backgroundColor: colors.dim }}
+                  >
+                    {rulesCount}
+                  </motion.span>
+                </AnimatePresence>
               )}
             </motion.button>
           )
@@ -119,7 +140,12 @@ export function Sidebar({
         <div className="rounded-md border border-stroke bg-surface p-3">
           <div className="mb-2 flex items-center justify-between gap-2">
             <p className="nothing-label">Status</p>
-            <span className={`h-1.5 w-1.5 rounded-full ${monitoring ? 'bg-success' : 'bg-text-tertiary'}`} aria-hidden />
+            <motion.span
+              className={`h-1.5 w-1.5 rounded-full ${monitoring ? 'bg-success' : 'bg-text-tertiary'}`}
+              aria-hidden
+              variants={monitoring ? pulseDot : undefined}
+              animate={monitoring ? 'animate' : undefined}
+            />
           </div>
           <p className={`font-mono text-[11px] font-medium ${monitoring ? 'text-success' : 'text-text-tertiary'}`}>
             {monitoring ? 'Monitoring active' : 'Monitoring paused'}

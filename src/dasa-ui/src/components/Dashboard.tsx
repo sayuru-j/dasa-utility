@@ -3,11 +3,14 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronRight, RefreshCw, RotateCcw, Trash2 } from 'lucide-react'
 import {
   activityItem,
+  badgePop,
+  confirmSwap,
   expandContent,
   fadeUp,
   pageVariants,
   pulseDot,
   scaleIn,
+  shimmer,
   springSnappy,
 } from '../lib/motion'
 import { sourceMeta } from '../lib/colors'
@@ -328,8 +331,9 @@ export function Dashboard({
           <div className="flex items-center gap-2">
             <motion.span
               key={historyTotal}
-              initial={{ scale: 1.2, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
+              variants={badgePop}
+              initial="initial"
+              animate="animate"
               className="nothing-tag nothing-tag-info !text-[9px]"
             >
               {historyTotal} sorted
@@ -339,9 +343,10 @@ export function Dashboard({
                 confirmClear ? (
                   <motion.div
                     key="confirm"
-                    initial={{ opacity: 0, x: 8 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -8 }}
+                    variants={confirmSwap}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
                     className="flex items-center gap-1.5"
                   >
                     <span className="font-mono text-[10px] text-text-tertiary">Clear all?</span>
@@ -371,9 +376,10 @@ export function Dashboard({
                     className="nothing-btn nothing-btn-ghost !px-2 !py-1"
                     onClick={() => setConfirmClear(true)}
                     aria-label="Clear activity"
-                    initial={{ opacity: 0, x: 8 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -8 }}
+                    variants={confirmSwap}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
                     whileHover={{ scale: 1.04 }}
                     whileTap={{ scale: 0.96 }}
                   >
@@ -386,7 +392,7 @@ export function Dashboard({
           </div>
         </div>
 
-        <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
+        <div ref={scrollRef} className="nothing-scroll nothing-scroll-fade min-h-0 flex-1 overflow-y-auto pr-1">
           <AnimatePresence mode="popLayout" initial={false}>
             {historyTotal === 0 ? (
               <motion.p
@@ -412,9 +418,14 @@ export function Dashboard({
                   ))}
                 </AnimatePresence>
                 {hasMore && (
-                  <div ref={loadMoreRef} className="py-3 text-center font-mono text-[10px] text-text-tertiary">
+                  <motion.div
+                    ref={loadMoreRef}
+                    variants={loadingHistory ? shimmer : undefined}
+                    animate={loadingHistory ? 'animate' : undefined}
+                    className="py-3 text-center font-mono text-[10px] text-text-tertiary"
+                  >
                     {loadingHistory ? 'Loading more…' : 'Scroll for more'}
-                  </div>
+                  </motion.div>
                 )}
               </motion.ul>
             )}

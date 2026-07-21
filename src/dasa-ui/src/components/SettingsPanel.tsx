@@ -14,7 +14,7 @@ import {
   Sparkles,
   Tags,
 } from 'lucide-react'
-import { fadeUp, pageVariants } from '../lib/motion'
+import { fadeUp, fieldVariants, pageVariants, badgePop } from '../lib/motion'
 import type { SettingsViewModel } from '../types'
 
 interface SettingsPanelProps {
@@ -46,11 +46,6 @@ const toggleIconClass = {
   warning: 'text-warning bg-warning/10 border-warning/20',
   success: 'text-success bg-success/10 border-success/20',
 } as const
-
-const fieldVariants = {
-  initial: { opacity: 0, y: 12 },
-  animate: { opacity: 1, y: 0 },
-}
 
 function SettingsSection({
   title,
@@ -259,7 +254,7 @@ export function SettingsPanel({ settings, onSave, onPickFolder }: SettingsPanelP
       className="mx-auto flex h-full min-h-0 w-full max-w-4xl flex-col"
       variants={pageVariants}
     >
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="nothing-scroll nothing-scroll-fade min-h-0 flex-1 overflow-y-auto pr-1">
         <div className="flex flex-col gap-5 pb-5">
       <motion.section variants={fadeUp} className="nothing-card nothing-card-accent-info p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
@@ -442,9 +437,10 @@ export function SettingsPanel({ settings, onSave, onPickFolder }: SettingsPanelP
             <AnimatePresence>
               {savedFlash && (
                 <motion.span
-                  initial={{ opacity: 0, x: 8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -8 }}
+                  variants={badgePop}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
                   className="font-mono text-xs text-success"
                 >
                   Saved

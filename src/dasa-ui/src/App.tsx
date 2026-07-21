@@ -6,7 +6,7 @@ import { RulesEditor } from './components/RulesEditor'
 import { SettingsPanel } from './components/SettingsPanel'
 import { Sidebar } from './components/Sidebar'
 import { TitleBar } from './components/TitleBar'
-import { fadeIn, pageVariants } from './lib/motion'
+import { fadeIn, pageVariants, springSnappy } from './lib/motion'
 import { isNativeHostAvailable, nativeBridge, subscribe } from './services/nativeBridge'
 import type {
   ActivityHistoryPayload,
@@ -170,7 +170,7 @@ export default function App() {
   }
 
   return (
-    <MotionConfig reducedMotion="user">
+    <MotionConfig reducedMotion="user" transition={springSnappy}>
       <motion.div
         className="flex h-full flex-col bg-surface text-text"
         initial={{ opacity: 0 }}
@@ -250,11 +250,11 @@ export default function App() {
           aria-hidden
           variants={fadeIn}
         >
-          <div className="absolute -left-24 top-8 h-72 w-72 rounded-full bg-success/8 blur-3xl" />
-          <div className="absolute bottom-12 right-0 h-64 w-64 rounded-full bg-gemini/10 blur-3xl" />
-          <div className="absolute left-1/3 top-1/2 h-56 w-56 -translate-y-1/2 rounded-full bg-info/6 blur-3xl" />
-          <div className="absolute bottom-0 left-1/4 h-40 w-40 rounded-full bg-rule/8 blur-3xl" />
-          <div className="absolute right-1/4 top-0 h-32 w-32 rounded-full bg-accent/6 blur-3xl" />
+          <div className="absolute -left-24 top-8 h-72 w-72 rounded-full bg-success/8 blur-3xl nothing-orb" />
+          <div className="absolute bottom-12 right-0 h-64 w-64 rounded-full bg-gemini/10 blur-3xl nothing-orb nothing-orb-delay-1" />
+          <div className="absolute left-1/3 top-1/2 h-56 w-56 -translate-y-1/2 rounded-full bg-info/6 blur-3xl nothing-orb nothing-orb-delay-2" />
+          <div className="absolute bottom-0 left-1/4 h-40 w-40 rounded-full bg-rule/8 blur-3xl nothing-orb nothing-orb-delay-3" />
+          <div className="absolute right-1/4 top-0 h-32 w-32 rounded-full bg-accent/6 blur-3xl nothing-orb nothing-orb-delay-4" />
         </motion.div>
       </motion.div>
     </MotionConfig>

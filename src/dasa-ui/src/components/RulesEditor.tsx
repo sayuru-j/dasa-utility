@@ -18,7 +18,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { FolderOpen, GripVertical, Plus, Sparkles, Trash2 } from 'lucide-react'
-import { expandContent, fadeUp, pageVariants, scaleIn, springSnappy } from '../lib/motion'
+import { expandContent, fadeUp, pageVariants, confirmSwap, scaleIn, springSnappy } from '../lib/motion'
 import { confidenceBarClass, confidenceTone } from '../lib/colors'
 import { nativeBridge, subscribe } from '../services/nativeBridge'
 import type { AutomationRule, DiscoveredRule, RulesDiscoveredPayload } from '../types'
@@ -68,6 +68,10 @@ function SortableRuleRow({
       ref={setNodeRef}
       style={style}
       layout
+      layoutId={`rule-row-${rule.id}`}
+      whileHover={{ scale: isDragging ? 1 : 1.008, x: isDragging ? 0 : 2 }}
+      whileTap={{ scale: 0.985 }}
+      transition={springSnappy}
       className={`flex items-center gap-2.5 rounded-md border px-3 py-2.5 transition-colors ${
         selected
           ? 'border-rule/40 bg-rule/10 shadow-[inset_2px_0_0_0] shadow-rule'
@@ -220,7 +224,7 @@ export function RulesEditor({ rules, onSave, onDelete, onReorder, onClearAll }: 
       initial="initial"
       animate="animate"
     >
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="nothing-scroll nothing-scroll-fade min-h-0 flex-1 overflow-y-auto pr-1">
         <div className="flex flex-col gap-6 pb-6">
       <motion.section
         variants={scaleIn}
@@ -345,38 +349,54 @@ export function RulesEditor({ rules, onSave, onDelete, onReorder, onClearAll }: 
             </div>
             <div className="flex items-center gap-1.5">
               {localRules.length > 0 && (
-                confirmClearAll ? (
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-mono text-[10px] text-accent">Clear all rules?</span>
-                    <button
-                      type="button"
-                      className="nothing-btn nothing-btn-ghost !px-2 !py-1 text-[10px] !text-accent"
-                      onClick={() => {
-                        onClearAll()
-                        setConfirmClearAll(false)
-                      }}
+                <AnimatePresence mode="wait">
+                  {confirmClearAll ? (
+                    <motion.div
+                      key="confirm-clear"
+                      variants={confirmSwap}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                      className="flex items-center gap-1.5"
                     >
-                      Yes
-                    </button>
-                    <button
+                      <span className="font-mono text-[10px] text-accent">Clear all rules?</span>
+                      <button
+                        type="button"
+                        className="nothing-btn nothing-btn-ghost !px-2 !py-1 text-[10px] !text-accent"
+                        onClick={() => {
+                          onClearAll()
+                          setConfirmClearAll(false)
+                        }}
+                      >
+                        Yes
+                      </button>
+                      <button
+                        type="button"
+                        className="nothing-btn nothing-btn-ghost !px-2 !py-1 text-[10px]"
+                        onClick={() => setConfirmClearAll(false)}
+                      >
+                        No
+                      </button>
+                    </motion.div>
+                  ) : (
+                    <motion.button
+                      key="clear-all"
                       type="button"
                       className="nothing-btn nothing-btn-ghost !px-2 !py-1 text-[10px]"
-                      onClick={() => setConfirmClearAll(false)}
+                      onClick={() => setConfirmClearAll(true)}
+                      aria-label="Clear all rules"
+                      variants={confirmSwap}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                      whileHover={{ scale: 1.04 }}
+                      whileTap={{ scale: 0.96 }}
                     >
-                      No
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    className="nothing-btn nothing-btn-ghost !px-2 !py-1 text-[10px]"
-                    onClick={() => setConfirmClearAll(true)}
-                    aria-label="Clear all rules"
-                  >
-                    <Trash2 size={12} strokeWidth={1.5} />
-                    Clear all
-                  </button>
-                )
+                      <Trash2 size={12} strokeWidth={1.5} />
+                      Clear all
+                    </motion.button>
+                  )}
+                </AnimatePresence>
               )}
               <button type="button" className="nothing-btn nothing-btn-ghost !px-2.5 !py-1.5" onClick={createRule}>
                 <Plus size={13} strokeWidth={1.5} />
@@ -431,9 +451,9 @@ export function RulesEditor({ rules, onSave, onDelete, onReorder, onClearAll }: 
             ) : (
               <motion.div
                 key={draft.id}
-                initial={{ opacity: 0, x: 16 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -16 }}
+                initial={{ opacity: 0, x: 16, scale: 0.98, filter: 'blur(4px)' }}
+                animate={{ opacity: 1, x: 0, scale: 1, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, x: -12, scale: 0.99, filter: 'blur(3px)' }}
                 transition={springSnappy}
                 className="flex flex-col gap-5"
               >

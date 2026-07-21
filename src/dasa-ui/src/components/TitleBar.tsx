@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { Minus, Square, X } from 'lucide-react'
-import { pulseDot, slideFromLeft } from '../lib/motion'
+import { pulseDot, slideFromLeft, springSnappy } from '../lib/motion'
 import { nativeBridge } from '../services/nativeBridge'
 
 interface TitleBarProps {
@@ -14,9 +14,9 @@ export function TitleBar({ connected, isMaximized }: TitleBarProps) {
   return (
     <motion.header
       className="relative flex h-8 shrink-0 items-stretch border-b border-stroke bg-surface select-none"
-      initial={{ opacity: 0, y: -8 }}
+      initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      transition={springSnappy}
     >
       <div
         className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-success/50 via-gemini/40 to-info/50"
