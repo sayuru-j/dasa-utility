@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { Minus, Square, X } from 'lucide-react'
-import { pulseDot, slideFromLeft, springSnappy } from '../lib/motion'
+import { slideFromLeft, springSnappy } from '../lib/motion'
 import { nativeBridge } from '../services/nativeBridge'
 
 interface TitleBarProps {
@@ -29,12 +29,6 @@ export function TitleBar({ connected, isMaximized }: TitleBarProps) {
         }}
         onDoubleClick={() => nativeBridge.windowMaximize()}
       >
-        <motion.span
-          className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent"
-          aria-hidden
-          variants={connected ? pulseDot : undefined}
-          animate={connected ? 'animate' : undefined}
-        />
         <motion.span
           className="font-mono text-[11px] font-medium tracking-widest text-text"
           variants={slideFromLeft}

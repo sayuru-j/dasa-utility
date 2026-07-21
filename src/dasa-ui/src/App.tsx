@@ -184,7 +184,6 @@ export default function App() {
             tab={tab}
             onTabChange={setTab}
             tabs={tabs}
-            monitoring={monitoring}
             historyCount={historyTotal}
             rulesCount={rules.length}
             connected={connected}

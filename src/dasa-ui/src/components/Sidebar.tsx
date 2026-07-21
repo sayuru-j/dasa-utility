@@ -7,7 +7,6 @@ interface SidebarProps {
   tab: TabId
   onTabChange: (tab: TabId) => void
   tabs: Array<{ id: TabId; label: string; icon: LucideIcon }>
-  monitoring: boolean
   historyCount: number
   rulesCount: number
   connected: boolean
@@ -17,7 +16,6 @@ export function Sidebar({
   tab,
   onTabChange,
   tabs,
-  monitoring,
   historyCount,
   rulesCount,
   connected,
@@ -31,8 +29,22 @@ export function Sidebar({
     >
       <motion.div className="border-b border-stroke px-4 py-4" variants={navItem}>
         <div className="flex items-center gap-2.5">
-          <span className="flex h-7 w-7 items-center justify-center rounded-md border border-accent/30 bg-accent/10">
-            <span className="h-2 w-2 rounded-full bg-accent" aria-hidden />
+          <span className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md border border-stroke bg-surface">
+            <img
+              src="/icon.ico"
+              alt=""
+              className="h-5 w-5 object-contain"
+              draggable={false}
+            />
+            <motion.span
+              className={`absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-surface-alt ${
+                connected ? 'bg-accent' : 'bg-text-tertiary'
+              }`}
+              aria-hidden
+              title={connected ? 'Connected' : 'Preview mode'}
+              variants={connected ? pulseDot : undefined}
+              animate={connected ? 'animate' : undefined}
+            />
           </span>
           <div className="min-w-0">
             <p className="truncate font-mono text-[11px] font-medium tracking-[0.18em] text-text">D.A.S.A</p>
@@ -135,26 +147,6 @@ export function Sidebar({
           )
         })}
       </div>
-
-      <motion.div className="mt-auto border-t border-stroke p-3" variants={navItem}>
-        <div className="rounded-md border border-stroke bg-surface p-3">
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <p className="nothing-label">Status</p>
-            <motion.span
-              className={`h-1.5 w-1.5 rounded-full ${monitoring ? 'bg-success' : 'bg-text-tertiary'}`}
-              aria-hidden
-              variants={monitoring ? pulseDot : undefined}
-              animate={monitoring ? 'animate' : undefined}
-            />
-          </div>
-          <p className={`font-mono text-[11px] font-medium ${monitoring ? 'text-success' : 'text-text-tertiary'}`}>
-            {monitoring ? 'Monitoring active' : 'Monitoring paused'}
-          </p>
-          <p className="mt-1 font-mono text-[10px] text-text-tertiary">
-            {historyCount} sorted · {rulesCount} rules
-          </p>
-        </div>
-      </motion.div>
     </motion.nav>
   )
 }
