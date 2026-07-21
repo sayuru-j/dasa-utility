@@ -74,6 +74,7 @@ export const nativeBridge = {
   saveRule: (rule: unknown) => postToHost('SAVE_RULE', rule),
   deleteRule: (id: string) => postToHost('DELETE_RULE', { id }),
   reorderRules: (orderedIds: string[]) => postToHost('REORDER_RULES', { orderedIds }),
+  clearAllRules: () => postToHost('CLEAR_ALL_RULES'),
   updateSettings: (payload: unknown) => postToHost('UPDATE_SETTINGS', payload),
   setMonitoring: (enabled: boolean) => postToHost('SET_MONITORING', { enabled }),
   triggerManualScan: () => postToHost('TRIGGER_MANUAL_SCAN'),

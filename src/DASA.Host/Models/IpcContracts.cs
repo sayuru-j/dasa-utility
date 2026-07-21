@@ -8,6 +8,7 @@ public static class IpcMessageTypes
     public const string SaveRule = "SAVE_RULE";
     public const string DeleteRule = "DELETE_RULE";
     public const string ReorderRules = "REORDER_RULES";
+    public const string ClearAllRules = "CLEAR_ALL_RULES";
     public const string UpdateSettings = "UPDATE_SETTINGS";
     public const string TriggerManualScan = "TRIGGER_MANUAL_SCAN";
     public const string UndoMove = "UNDO_MOVE";

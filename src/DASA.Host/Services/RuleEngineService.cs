@@ -71,6 +71,15 @@ public sealed class RuleEngineService
         }
     }
 
+    public void ClearAllRules()
+    {
+        lock (_sync)
+        {
+            _rules = [];
+            PersistUnlocked();
+        }
+    }
+
     public void Reorder(IReadOnlyList<string> orderedIds)
     {
         lock (_sync)

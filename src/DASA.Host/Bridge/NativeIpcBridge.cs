@@ -172,6 +172,11 @@ public sealed class NativeIpcBridge
                     break;
                 }
 
+                case IpcMessageTypes.ClearAllRules:
+                    _rules.ClearAllRules();
+                    Emit(IpcMessageTypes.RulesUpdated, _rules.GetRules(), requestId);
+                    break;
+
                 case IpcMessageTypes.UpdateSettings:
                 {
                     var update = payloadElement?.Deserialize<SettingsUpdatePayload>(JsonOptions);

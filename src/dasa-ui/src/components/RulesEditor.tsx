@@ -28,6 +28,7 @@ interface RulesEditorProps {
   onSave: (rule: AutomationRule) => void
   onDelete: (id: string) => void
   onReorder: (orderedIds: string[]) => void
+  onClearAll: () => void
 }
 
 function emptyRule(): AutomationRule {
@@ -95,7 +96,7 @@ function SortableRuleRow({
   )
 }
 
-export function RulesEditor({ rules, onSave, onDelete, onReorder }: RulesEditorProps) {
+export function RulesEditor({ rules, onSave, onDelete, onReorder, onClearAll }: RulesEditorProps) {
   const [localRules, setLocalRules] = useState(rules)
   const [selectedId, setSelectedId] = useState<string | null>(rules[0]?.id ?? null)
   const [draft, setDraft] = useState<AutomationRule | null>(rules[0] ?? null)
@@ -105,15 +106,27 @@ export function RulesEditor({ rules, onSave, onDelete, onReorder }: RulesEditorP
   const [discoverSummary, setDiscoverSummary] = useState('')
   const [selectedDiscovered, setSelectedDiscovered] = useState<Set<string>>(new Set())
   const [discoverError, setDiscoverError] = useState('')
+  const [confirmClearAll, setConfirmClearAll] = useState(false)
 
   useEffect(() => {
     setLocalRules(rules)
+    if (rules.length === 0) {
+      setSelectedId(null)
+      setDraft(null)
+      setConfirmClearAll(false)
+      return
+    }
+
     if (!selectedId && rules[0]) {
       setSelectedId(rules[0].id)
       setDraft(rules[0])
     } else if (selectedId) {
       const match = rules.find((r) => r.id === selectedId)
       if (match) setDraft(match)
+      else {
+        setSelectedId(rules[0].id)
+        setDraft(rules[0])
+      }
     }
   }, [rules, selectedId])
 
@@ -330,9 +343,45 @@ export function RulesEditor({ rules, onSave, onDelete, onReorder }: RulesEditorP
               <span className="nothing-section-dot bg-rule" aria-hidden />
               <p className="nothing-label">Rules</p>
             </div>
-            <button type="button" className="nothing-btn nothing-btn-ghost !px-2.5 !py-1.5" onClick={createRule}>
-              <Plus size={13} strokeWidth={1.5} />
-            </button>
+            <div className="flex items-center gap-1.5">
+              {localRules.length > 0 && (
+                confirmClearAll ? (
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-mono text-[10px] text-accent">Clear all rules?</span>
+                    <button
+                      type="button"
+                      className="nothing-btn nothing-btn-ghost !px-2 !py-1 text-[10px] !text-accent"
+                      onClick={() => {
+                        onClearAll()
+                        setConfirmClearAll(false)
+                      }}
+                    >
+                      Yes
+                    </button>
+                    <button
+                      type="button"
+                      className="nothing-btn nothing-btn-ghost !px-2 !py-1 text-[10px]"
+                      onClick={() => setConfirmClearAll(false)}
+                    >
+                      No
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    className="nothing-btn nothing-btn-ghost !px-2 !py-1 text-[10px]"
+                    onClick={() => setConfirmClearAll(true)}
+                    aria-label="Clear all rules"
+                  >
+                    <Trash2 size={12} strokeWidth={1.5} />
+                    Clear all
+                  </button>
+                )
+              )}
+              <button type="button" className="nothing-btn nothing-btn-ghost !px-2.5 !py-1.5" onClick={createRule}>
+                <Plus size={13} strokeWidth={1.5} />
+              </button>
+            </div>
           </div>
           {localRules.length === 0 ? (
             <motion.p

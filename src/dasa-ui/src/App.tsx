@@ -227,6 +227,7 @@ export default function App() {
                     onSave={(rule) => nativeBridge.saveRule(rule)}
                     onDelete={(id) => nativeBridge.deleteRule(id)}
                     onReorder={(ids) => nativeBridge.reorderRules(ids)}
+                    onClearAll={() => nativeBridge.clearAllRules()}
                   />
                 )}
                 {tab === 'settings' && (

@@ -99,6 +99,7 @@ export type UiToHostType =
   | 'SAVE_RULE'
   | 'DELETE_RULE'
   | 'REORDER_RULES'
+  | 'CLEAR_ALL_RULES'
   | 'UPDATE_SETTINGS'
   | 'TRIGGER_MANUAL_SCAN'
   | 'UNDO_MOVE'
