@@ -22,9 +22,20 @@ public partial class MainWindow : Window, IWindowHost
         _services = services;
         InitializeComponent();
         ApplyWindowIcon();
+        WindowMaximizeHelper.EnableWorkAreaMaximize(this);
         Loaded += OnLoaded;
         Closing += OnClosing;
-        StateChanged += (_, _) => WindowStateChanged?.Invoke(this, EventArgs.Empty);
+        StateChanged += OnStateChanged;
+    }
+
+    private void OnStateChanged(object? sender, EventArgs e)
+    {
+        if (WindowChrome.GetWindowChrome(this) is { } chrome)
+        {
+            chrome.CornerRadius = WindowState == WindowState.Maximized ? new CornerRadius(0) : new CornerRadius(8);
+        }
+
+        WindowStateChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public bool IsMaximized => WindowState == WindowState.Maximized;
