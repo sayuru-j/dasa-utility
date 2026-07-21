@@ -67,7 +67,7 @@ function SortableRuleRow({
       ref={setNodeRef}
       style={style}
       layout
-      className={`flex items-center gap-2 rounded border px-2 py-2 transition-colors ${
+      className={`flex items-center gap-2.5 rounded-md border px-3 py-2.5 transition-colors ${
         selected
           ? 'border-rule/40 bg-rule/10 shadow-[inset_2px_0_0_0] shadow-rule'
           : 'border-stroke bg-surface hover:border-stroke-strong'
@@ -202,14 +202,16 @@ export function RulesEditor({ rules, onSave, onDelete, onReorder }: RulesEditorP
 
   return (
     <motion.div
-      className="mx-auto flex h-full min-h-0 max-w-4xl flex-col gap-5 overflow-y-auto"
+      className="mx-auto flex h-full min-h-0 w-full max-w-4xl flex-col"
       variants={pageVariants}
       initial="initial"
       animate="animate"
     >
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="flex flex-col gap-6 pb-6">
       <motion.section
         variants={scaleIn}
-        className="nothing-card nothing-card-accent-gemini border border-dashed border-gemini/30 p-5"
+        className="nothing-card nothing-card-accent-gemini border border-dashed border-gemini/30 p-5 sm:p-6"
       >
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
@@ -256,8 +258,8 @@ export function RulesEditor({ rules, onSave, onDelete, onReorder }: RulesEditorP
               exit="exit"
               className="overflow-hidden"
             >
-              <div className="mt-5 border-t border-stroke pt-4">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <div className="mt-5 border-t border-stroke pt-5">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3 px-0.5">
               <p className="font-mono text-[11px] text-text-secondary">{discoverSummary}</p>
               <button
                 type="button"
@@ -268,14 +270,14 @@ export function RulesEditor({ rules, onSave, onDelete, onReorder }: RulesEditorP
                 Add selected ({selectedDiscovered.size})
               </button>
             </div>
-            <ul className="flex flex-col gap-2">
+            <ul className="flex flex-col gap-2.5">
               {discovered.map((rule, index) => (
                 <motion.li
                   key={rule.id}
                   initial={{ opacity: 0, x: -12 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05, ...springSnappy }}
-                  className="flex gap-3 rounded border border-stroke bg-surface px-3 py-2.5 transition-colors hover:border-gemini/30 hover:bg-gemini/5"
+                  className="flex gap-3 rounded-md border border-stroke bg-surface px-4 py-3 transition-colors hover:border-gemini/30 hover:bg-gemini/5"
                 >
                   <input
                     type="checkbox"
@@ -319,16 +321,16 @@ export function RulesEditor({ rules, onSave, onDelete, onReorder }: RulesEditorP
       </motion.section>
 
       <motion.div
-        className="grid gap-5 lg:grid-cols-[240px_1fr]"
+        className="grid gap-6 lg:grid-cols-[260px_1fr]"
         variants={fadeUp}
       >
-        <motion.section variants={fadeUp} className="nothing-card nothing-card-accent-warning flex flex-col gap-2 p-3">
-          <div className="mb-1 flex items-center justify-between px-1">
+        <motion.section variants={fadeUp} className="nothing-card nothing-card-accent-warning flex min-h-[280px] flex-col gap-3 p-4 sm:p-5">
+          <div className="flex items-center justify-between gap-2 px-0.5">
             <div className="flex items-center gap-2">
               <span className="nothing-section-dot bg-rule" aria-hidden />
               <p className="nothing-label">Rules</p>
             </div>
-            <button type="button" className="nothing-btn nothing-btn-ghost !px-2 !py-1" onClick={createRule}>
+            <button type="button" className="nothing-btn nothing-btn-ghost !px-2.5 !py-1.5" onClick={createRule}>
               <Plus size={13} strokeWidth={1.5} />
             </button>
           </div>
@@ -336,14 +338,14 @@ export function RulesEditor({ rules, onSave, onDelete, onReorder }: RulesEditorP
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="px-1 py-4 font-mono text-[11px] text-text-tertiary"
+              className="px-1 py-6 text-center font-mono text-[11px] text-text-tertiary"
             >
               No rules yet.
             </motion.p>
           ) : (
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
               <SortableContext items={localRules.map((r) => r.id)} strategy={verticalListSortingStrategy}>
-                <div className="flex flex-col gap-1.5">
+                <div className="flex flex-col gap-2 pr-0.5">
                   {localRules.map((rule) => (
                     <SortableRuleRow
                       key={rule.id}
@@ -363,7 +365,7 @@ export function RulesEditor({ rules, onSave, onDelete, onReorder }: RulesEditorP
 
         <motion.section
           layout
-          className="nothing-card nothing-card-accent-info p-5"
+          className="nothing-card nothing-card-accent-info p-5 sm:p-6"
           transition={springSnappy}
         >
           <AnimatePresence mode="wait">
@@ -373,7 +375,7 @@ export function RulesEditor({ rules, onSave, onDelete, onReorder }: RulesEditorP
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
-                className="font-mono text-xs text-text-tertiary"
+                className="py-8 text-center font-mono text-xs text-text-tertiary"
               >
                 Select or create a rule.
               </motion.p>
@@ -384,20 +386,20 @@ export function RulesEditor({ rules, onSave, onDelete, onReorder }: RulesEditorP
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -16 }}
                 transition={springSnappy}
-                className="flex flex-col gap-4"
+                className="flex flex-col gap-5"
               >
               <p className="nothing-label">Rule builder</p>
               <label className="block">
-                <span className="nothing-label mb-1.5 block">Name</span>
+                <span className="nothing-label mb-2 block">Name</span>
                 <input
                   className="nothing-input"
                   value={draft.name}
                   onChange={(e) => setDraft({ ...draft, name: e.target.value })}
                 />
               </label>
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-5 sm:grid-cols-2">
                 <label className="block">
-                  <span className="nothing-label mb-1.5 block">Extension</span>
+                  <span className="nothing-label mb-2 block">Extension</span>
                   <input
                     className="nothing-input font-mono"
                     value={draft.extension ?? ''}
@@ -406,7 +408,7 @@ export function RulesEditor({ rules, onSave, onDelete, onReorder }: RulesEditorP
                   />
                 </label>
                 <label className="block">
-                  <span className="nothing-label mb-1.5 block">Name contains</span>
+                  <span className="nothing-label mb-2 block">Name contains</span>
                   <input
                     className="nothing-input font-mono"
                     value={draft.nameContains ?? ''}
@@ -416,7 +418,7 @@ export function RulesEditor({ rules, onSave, onDelete, onReorder }: RulesEditorP
                 </label>
               </div>
               <label className="block">
-                <span className="nothing-label mb-1.5 block">Destination</span>
+                <span className="nothing-label mb-2 block">Destination</span>
                 <div className="flex gap-2">
                   <input
                     className="nothing-input font-mono text-xs"
@@ -442,7 +444,7 @@ export function RulesEditor({ rules, onSave, onDelete, onReorder }: RulesEditorP
                 />
                 Enabled
               </label>
-              <div className="flex gap-2 pt-1">
+              <div className="flex gap-2 border-t border-stroke pt-4">
                 <button
                   type="button"
                   className="nothing-btn nothing-btn-primary"
@@ -462,6 +464,8 @@ export function RulesEditor({ rules, onSave, onDelete, onReorder }: RulesEditorP
           </AnimatePresence>
         </motion.section>
       </motion.div>
+        </div>
+      </div>
     </motion.div>
   )
 }
