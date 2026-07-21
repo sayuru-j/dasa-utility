@@ -13,11 +13,15 @@ export function TitleBar({ connected, isMaximized }: TitleBarProps) {
 
   return (
     <motion.header
-      className="flex h-8 shrink-0 items-stretch border-b border-stroke bg-surface select-none"
+      className="relative flex h-8 shrink-0 items-stretch border-b border-stroke bg-surface select-none"
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
     >
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-success/50 via-gemini/40 to-info/50"
+        aria-hidden
+      />
       <div
         className="flex min-w-0 flex-1 items-center gap-2.5 px-3"
         onMouseDown={(e) => {

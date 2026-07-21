@@ -10,6 +10,7 @@ import {
   scaleIn,
   springSnappy,
 } from '../lib/motion'
+import { sourceMeta } from '../lib/colors'
 import type { FileProcessedPayload, MalwareDetectedPayload, SettingsViewModel } from '../types'
 
 interface DashboardProps {
@@ -32,16 +33,11 @@ function formatTime(value: string) {
 }
 
 function sourceLabel(source: string) {
-  switch (source) {
-    case 'amsi':
-      return 'AMSI'
-    case 'rule':
-      return 'Rule'
-    case 'gemini':
-      return 'Gemini'
-    default:
-      return 'Default'
-  }
+  return sourceMeta(source).label
+}
+
+function sourceTagClass(source: string) {
+  return sourceMeta(source).tagClass
 }
 
 function shortDestination(path: string) {
@@ -63,6 +59,8 @@ function ActivityItem({
   onToggle: () => void
   onUndo: (token: string) => void
 }) {
+  const sourceClass = sourceTagClass(item.source)
+
   return (
     <motion.li
       layout
@@ -88,18 +86,18 @@ function ActivityItem({
           <ChevronRight size={14} strokeWidth={1.5} />
         </motion.span>
         <span className="min-w-0 flex-1 truncate text-sm">{item.fileName}</span>
-        <span className="nothing-tag shrink-0">{sourceLabel(item.source)}</span>
+        <span className={`nothing-tag shrink-0 ${sourceClass}`}>{sourceLabel(item.source)}</span>
         {item.quarantined && (
           <motion.span
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="nothing-tag shrink-0 !border-accent/40 !text-accent"
+            className="nothing-tag nothing-tag-amsi shrink-0"
           >
             Quarantine
           </motion.span>
         )}
         {!expanded && (
-          <span className="hidden truncate font-mono text-[10px] text-text-tertiary sm:inline">
+          <span className="nothing-path-chip hidden truncate sm:inline">
             → {shortDestination(item.destinationPath)}
           </span>
         )}
@@ -132,8 +130,14 @@ function ActivityItem({
                   </div>
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-text-tertiary">
                     <span>{formatTime(item.timestamp)}</span>
-                    {item.category && <span>Category: {item.category}</span>}
-                    {item.confidence != null && <span>{(item.confidence * 100).toFixed(0)}% confidence</span>}
+                    {item.category && (
+                      <span className="nothing-tag nothing-tag-info !normal-case">{item.category}</span>
+                    )}
+                    {item.confidence != null && (
+                      <span className={item.confidence >= 0.85 ? 'text-success' : item.confidence >= 0.6 ? 'text-rule' : 'text-text-tertiary'}>
+                        {(item.confidence * 100).toFixed(0)}% confidence
+                      </span>
+                    )}
                   </div>
                 </motion.div>
                 {item.undoToken && !item.quarantined && (
@@ -199,10 +203,18 @@ export function Dashboard({
     >
       <motion.section
         variants={fadeUp}
-        className="nothing-card flex shrink-0 flex-wrap items-center justify-between gap-4 p-5"
+        className={`nothing-card flex shrink-0 flex-wrap items-center justify-between gap-4 p-5 ${
+          monitoring ? 'nothing-card-accent-success' : ''
+        }`}
       >
         <div>
-          <p className="nothing-label mb-1">Monitoring</p>
+          <div className="mb-1 flex items-center gap-2">
+            <span
+              className={`nothing-section-dot ${monitoring ? 'bg-success' : 'bg-text-tertiary'}`}
+              aria-hidden
+            />
+            <p className="nothing-label">Monitoring</p>
+          </div>
           <p className="font-mono text-sm text-text-secondary">{settings.watchFolder || '—'}</p>
         </div>
         <div className="flex items-center gap-4">
@@ -219,6 +231,7 @@ export function Dashboard({
               type="button"
               className="nothing-toggle"
               data-on={monitoring ? 'true' : 'false'}
+              data-tone="success"
               aria-label="Toggle monitoring"
               onClick={() => onToggleMonitoring(!monitoring)}
               whileTap={{ scale: 0.92 }}
@@ -226,7 +239,7 @@ export function Dashboard({
           </div>
           <motion.button
             type="button"
-            className="nothing-btn nothing-btn-ghost"
+            className="nothing-btn nothing-btn-info"
             onClick={handleScan}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
@@ -280,13 +293,16 @@ export function Dashboard({
         className="nothing-card flex min-h-0 flex-1 flex-col overflow-hidden p-5"
       >
         <div className="mb-2 flex shrink-0 items-center justify-between gap-3">
-          <p className="nothing-label">Activity</p>
+          <div className="flex items-center gap-2">
+            <span className="nothing-section-dot bg-info" aria-hidden />
+            <p className="nothing-label">Activity</p>
+          </div>
           <div className="flex items-center gap-2">
             <motion.span
               key={history.length}
               initial={{ scale: 1.2, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="font-mono text-[10px] text-text-tertiary"
+              className="nothing-tag nothing-tag-info"
             >
               {history.length} events
             </motion.span>

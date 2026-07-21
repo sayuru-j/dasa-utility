@@ -19,6 +19,7 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { FolderOpen, GripVertical, Plus, Sparkles, Trash2 } from 'lucide-react'
 import { expandContent, fadeUp, pageVariants, scaleIn, springSnappy } from '../lib/motion'
+import { confidenceBarClass, confidenceTone } from '../lib/colors'
 import { nativeBridge, subscribe } from '../services/nativeBridge'
 import type { AutomationRule, DiscoveredRule, RulesDiscoveredPayload } from '../types'
 
@@ -66,8 +67,10 @@ function SortableRuleRow({
       ref={setNodeRef}
       style={style}
       layout
-      className={`flex items-center gap-2 rounded border px-2 py-2 ${
-        selected ? 'border-stroke-strong bg-surface-elevated' : 'border-stroke bg-surface'
+      className={`flex items-center gap-2 rounded border px-2 py-2 transition-colors ${
+        selected
+          ? 'border-rule/40 bg-rule/10 shadow-[inset_2px_0_0_0] shadow-rule'
+          : 'border-stroke bg-surface hover:border-stroke-strong'
       }`}
     >
       <button
@@ -206,13 +209,13 @@ export function RulesEditor({ rules, onSave, onDelete, onReorder }: RulesEditorP
     >
       <motion.section
         variants={scaleIn}
-        className="nothing-card border border-dashed border-stroke-strong p-5"
+        className="nothing-card nothing-card-accent-gemini border border-dashed border-gemini/30 p-5"
       >
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
             <div className="mb-2 flex items-center gap-2">
-              <Sparkles size={14} className="text-accent" strokeWidth={1.5} />
-              <p className="nothing-label !text-accent">Beta</p>
+              <Sparkles size={14} className="text-gemini" strokeWidth={1.5} />
+              <p className="nothing-label !text-gemini">Beta</p>
             </div>
             <h2 className="text-sm font-medium">Discover existing rules via AI</h2>
             <p className="mt-1.5 max-w-xl font-mono text-[11px] leading-relaxed text-text-tertiary">
@@ -228,7 +231,7 @@ export function RulesEditor({ rules, onSave, onDelete, onReorder }: RulesEditorP
           </div>
           <motion.button
             type="button"
-            className="nothing-btn nothing-btn-primary shrink-0"
+            className="nothing-btn nothing-btn-primary shrink-0 !border-gemini/40 !bg-gemini !text-white hover:!bg-[#9580ff]"
             disabled={discovering}
             onClick={startDiscovery}
             whileHover={{ scale: discovering ? 1 : 1.03 }}
@@ -272,28 +275,34 @@ export function RulesEditor({ rules, onSave, onDelete, onReorder }: RulesEditorP
                   initial={{ opacity: 0, x: -12 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05, ...springSnappy }}
-                  className="flex gap-3 rounded border border-stroke bg-surface px-3 py-2.5"
+                  className="flex gap-3 rounded border border-stroke bg-surface px-3 py-2.5 transition-colors hover:border-gemini/30 hover:bg-gemini/5"
                 >
                   <input
                     type="checkbox"
                     checked={selectedDiscovered.has(rule.id)}
                     onChange={() => toggleDiscovered(rule.id)}
-                    className="mt-0.5 accent-accent"
+                    className="mt-0.5 accent-gemini"
                   />
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-sm">{rule.name}</span>
-                      <span className="nothing-tag">{rule.extension || 'any'}</span>
-                      <span className="font-mono text-[10px] text-text-tertiary">
+                      <span className="nothing-tag nothing-tag-rule">{rule.extension || 'any'}</span>
+                      <span className={`font-mono text-[10px] ${confidenceTone(rule.confidence)}`}>
                         {(rule.confidence * 100).toFixed(0)}%
                       </span>
+                    </div>
+                    <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-surface-elevated">
+                      <div
+                        className={`h-full rounded-full ${confidenceBarClass(rule.confidence)}`}
+                        style={{ width: `${Math.round(rule.confidence * 100)}%` }}
+                      />
                     </div>
                     {rule.nameContains && (
                       <p className="mt-0.5 font-mono text-[10px] text-text-tertiary">
                         contains &quot;{rule.nameContains}&quot;
                       </p>
                     )}
-                    <p className="mt-1 truncate font-mono text-[10px] text-text-tertiary">
+                    <p className="mt-1 truncate font-mono text-[10px] text-info">
                       → {rule.destinationFolder}
                     </p>
                     {rule.reason && (
@@ -313,9 +322,12 @@ export function RulesEditor({ rules, onSave, onDelete, onReorder }: RulesEditorP
         className="grid gap-5 lg:grid-cols-[240px_1fr]"
         variants={fadeUp}
       >
-        <motion.section variants={fadeUp} className="nothing-card flex flex-col gap-2 p-3">
+        <motion.section variants={fadeUp} className="nothing-card nothing-card-accent-warning flex flex-col gap-2 p-3">
           <div className="mb-1 flex items-center justify-between px-1">
-            <p className="nothing-label">Rules</p>
+            <div className="flex items-center gap-2">
+              <span className="nothing-section-dot bg-rule" aria-hidden />
+              <p className="nothing-label">Rules</p>
+            </div>
             <button type="button" className="nothing-btn nothing-btn-ghost !px-2 !py-1" onClick={createRule}>
               <Plus size={13} strokeWidth={1.5} />
             </button>
@@ -351,7 +363,7 @@ export function RulesEditor({ rules, onSave, onDelete, onReorder }: RulesEditorP
 
         <motion.section
           layout
-          className="nothing-card p-5"
+          className="nothing-card nothing-card-accent-info p-5"
           transition={springSnappy}
         >
           <AnimatePresence mode="wait">

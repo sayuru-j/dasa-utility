@@ -6,6 +6,7 @@ import { RulesEditor } from './components/RulesEditor'
 import { SettingsPanel } from './components/SettingsPanel'
 import { TitleBar } from './components/TitleBar'
 import { fadeIn, navItem, navStagger, pageVariants } from './lib/motion'
+import { tabColors } from './lib/colors'
 import { isNativeHostAvailable, nativeBridge, subscribe } from './services/nativeBridge'
 import type {
   AutomationRule,
@@ -163,6 +164,7 @@ export default function App() {
                   type="button"
                   className="nothing-nav-item relative"
                   data-active={active ? 'true' : 'false'}
+                  data-tab={id}
                   onClick={() => setTab(id)}
                   variants={navItem}
                   whileHover={{ x: 2 }}
@@ -173,17 +175,21 @@ export default function App() {
                       layoutId="nav-active-bg"
                       className="absolute inset-0 rounded border border-stroke bg-surface-elevated"
                       transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-                      style={{ zIndex: 0 }}
+                      style={{
+                        zIndex: 0,
+                        boxShadow: `inset 2px 0 0 ${tabColors[id].accent}`,
+                      }}
                     />
                   )}
                   {active && (
                     <motion.span
                       layoutId="nav-active-dot"
-                      className="absolute left-2.5 top-1/2 z-10 h-1 w-1 -translate-y-1/2 rounded-full bg-accent"
+                      className="absolute left-2.5 top-1/2 z-10 h-1 w-1 -translate-y-1/2 rounded-full"
+                      style={{ backgroundColor: tabColors[id].accent }}
                       transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                     />
                   )}
-                  <Icon size={15} strokeWidth={1.5} className="relative z-10 pl-2" />
+                  <Icon size={15} strokeWidth={1.5} className="nav-icon relative z-10 pl-2 transition-colors" />
                   <span className="relative z-10">{label}</span>
                 </motion.button>
               )
@@ -236,15 +242,18 @@ export default function App() {
         </div>
 
         <motion.div
-          className="pointer-events-none fixed inset-0 -z-10"
+          className="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
           initial={{ opacity: 0 }}
-          animate={{ opacity: 0.35 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 1.2, delay: 0.2 }}
           aria-hidden
           variants={fadeIn}
         >
-          <div className="absolute -left-32 top-0 h-64 w-64 rounded-full bg-accent/5 blur-3xl" />
-          <div className="absolute bottom-0 right-0 h-48 w-48 rounded-full bg-accent/3 blur-3xl" />
+          <div className="absolute -left-24 top-8 h-72 w-72 rounded-full bg-success/8 blur-3xl" />
+          <div className="absolute bottom-12 right-0 h-64 w-64 rounded-full bg-gemini/10 blur-3xl" />
+          <div className="absolute left-1/3 top-1/2 h-56 w-56 -translate-y-1/2 rounded-full bg-info/6 blur-3xl" />
+          <div className="absolute bottom-0 left-1/4 h-40 w-40 rounded-full bg-rule/8 blur-3xl" />
+          <div className="absolute right-1/4 top-0 h-32 w-32 rounded-full bg-accent/6 blur-3xl" />
         </motion.div>
       </motion.div>
     </MotionConfig>

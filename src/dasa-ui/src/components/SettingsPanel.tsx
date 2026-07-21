@@ -12,6 +12,21 @@ interface SettingsPanelProps {
 
 const WAIT_TIME_OPTIONS = [0, 1, 2, 5, 10, 15, 30, 60] as const
 
+const accentDotClass = {
+  gemini: 'bg-gemini',
+  success: 'bg-success',
+  info: 'bg-info',
+  rule: 'bg-rule',
+  accent: 'bg-accent',
+} as const
+
+const toggleActiveClass = {
+  info: 'border-info/30 bg-info/5',
+  gemini: 'border-gemini/30 bg-gemini/5',
+  warning: 'border-warning/30 bg-warning/5',
+  success: 'border-success/30 bg-success/5',
+} as const
+
 const fieldVariants = {
   initial: { opacity: 0, y: 12 },
   animate: { opacity: 1, y: 0 },
@@ -68,15 +83,27 @@ export function SettingsPanel({ settings, onSave, onPickFolder }: SettingsPanelP
       value: showMoveNotificationsEnabled,
       set: setShowMoveNotificationsEnabled,
       hint: 'Show a screen-edge popup when a file is sorted, with a button to open the new location.',
+      tone: 'info' as const,
     },
     {
       label: 'Smart subfolders',
       value: smartSubfoldersEnabled,
       set: setSmartSubfoldersEnabled,
       hint: 'e.g. Shrek.mp4 → Movies/Shrek/Shrek.mp4',
+      tone: 'gemini' as const,
     },
-    { label: 'AMSI protection', value: amsiProtectionEnabled, set: setAmsiProtectionEnabled },
-    { label: 'Auto-start', value: autoStartWithWindows, set: setAutoStartWithWindows },
+    {
+      label: 'AMSI protection',
+      value: amsiProtectionEnabled,
+      set: setAmsiProtectionEnabled,
+      tone: 'warning' as const,
+    },
+    {
+      label: 'Auto-start',
+      value: autoStartWithWindows,
+      set: setAutoStartWithWindows,
+      tone: 'success' as const,
+    },
   ]
 
   return (
@@ -84,8 +111,11 @@ export function SettingsPanel({ settings, onSave, onPickFolder }: SettingsPanelP
       className="mx-auto flex h-full min-h-0 max-w-xl flex-col gap-5 overflow-y-auto"
       variants={pageVariants}
     >
-      <motion.section variants={fadeUp} className="nothing-card p-5">
-        <p className="nothing-label mb-1">Settings</p>
+      <motion.section variants={fadeUp} className="nothing-card nothing-card-accent-info p-5">
+        <div className="mb-1 flex items-center gap-2">
+          <span className="nothing-section-dot bg-info" aria-hidden />
+          <p className="nothing-label">Settings</p>
+        </div>
         <p className="font-mono text-xs text-text-tertiary">API keys encrypted via Windows DPAPI.</p>
       </motion.section>
 
@@ -100,6 +130,7 @@ export function SettingsPanel({ settings, onSave, onPickFolder }: SettingsPanelP
           {
             key: 'api',
             label: 'Gemini API key',
+            accent: 'gemini',
             node: (
               <input
                 className="nothing-input font-mono text-xs"
@@ -114,6 +145,7 @@ export function SettingsPanel({ settings, onSave, onPickFolder }: SettingsPanelP
           {
             key: 'watch',
             label: 'Watch folder',
+            accent: 'success',
             node: (
               <div className="flex gap-2">
                 <input
@@ -136,6 +168,7 @@ export function SettingsPanel({ settings, onSave, onPickFolder }: SettingsPanelP
           {
             key: 'sort',
             label: 'Sort root',
+            accent: 'info',
             node: (
               <div className="flex gap-2">
                 <input
@@ -158,6 +191,7 @@ export function SettingsPanel({ settings, onSave, onPickFolder }: SettingsPanelP
           {
             key: 'wait',
             label: 'Wait time',
+            accent: 'rule',
             node: (
               <>
                 <select
@@ -180,6 +214,7 @@ export function SettingsPanel({ settings, onSave, onPickFolder }: SettingsPanelP
           {
             key: 'quarantine',
             label: 'Quarantine',
+            accent: 'accent',
             node: (
               <div className="nothing-input font-mono text-xs text-text-tertiary">
                 {settings.quarantineFolder || '—'}
@@ -189,6 +224,7 @@ export function SettingsPanel({ settings, onSave, onPickFolder }: SettingsPanelP
           {
             key: 'taxonomy',
             label: 'Taxonomy',
+            accent: 'gemini',
             node: (
               <textarea
                 className="nothing-input min-h-20 resize-y font-mono text-xs"
@@ -204,16 +240,21 @@ export function SettingsPanel({ settings, onSave, onPickFolder }: SettingsPanelP
             variants={fieldVariants}
             transition={{ ...springSnappy, delay: index * 0.04 }}
           >
-            <span className="nothing-label mb-1.5 block">{field.label}</span>
+            <span className="mb-1.5 flex items-center gap-2">
+              <span className={`nothing-section-dot ${accentDotClass[field.accent as keyof typeof accentDotClass]}`} aria-hidden />
+              <span className="nothing-label">{field.label}</span>
+            </span>
             {field.node}
           </motion.label>
         ))}
 
         <motion.div className="flex flex-col gap-2" variants={fieldVariants}>
-          {toggles.map(({ label, value, set, hint }, index) => (
+          {toggles.map(({ label, value, set, hint, tone }, index) => (
             <motion.div
               key={label}
-              className="flex items-center justify-between rounded border border-stroke px-3 py-2.5"
+              className={`flex items-center justify-between rounded border px-3 py-2.5 transition-colors ${
+                value ? toggleActiveClass[tone] : 'border-stroke'
+              }`}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.25 + index * 0.05 }}
@@ -229,6 +270,7 @@ export function SettingsPanel({ settings, onSave, onPickFolder }: SettingsPanelP
                 type="button"
                 className="nothing-toggle shrink-0"
                 data-on={value ? 'true' : 'false'}
+                data-tone={tone}
                 onClick={() => set((v) => !v)}
                 aria-label={`Toggle ${label}`}
                 whileTap={{ scale: 0.9 }}
