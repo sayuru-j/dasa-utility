@@ -117,7 +117,21 @@ public sealed class HistoryStore
         }
     }
 
-    public List<FileProcessedPayload> GetRecent(int limit = 100)
+    public List<FileProcessedPayload> GetRecent(int limit = 100) => GetPage(0, limit);
+
+    public int GetCount()
+    {
+        lock (_sync)
+        {
+            using var conn = new SqliteConnection(ConnectionString);
+            conn.Open();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "SELECT COUNT(*) FROM history;";
+            return Convert.ToInt32(cmd.ExecuteScalar());
+        }
+    }
+
+    public List<FileProcessedPayload> GetPage(int offset, int limit)
     {
         lock (_sync)
         {
@@ -129,31 +143,37 @@ public sealed class HistoryStore
                 SELECT id, original_path, destination_path, file_name, category, source, confidence, undo_token, quarantined, timestamp
                 FROM history
                 ORDER BY timestamp DESC
-                LIMIT $limit;
+                LIMIT $limit OFFSET $offset;
                 """;
             cmd.Parameters.AddWithValue("$limit", limit);
+            cmd.Parameters.AddWithValue("$offset", offset);
 
             var list = new List<FileProcessedPayload>();
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
-                list.Add(new FileProcessedPayload
-                {
-                    Id = reader.GetString(0),
-                    OriginalPath = reader.GetString(1),
-                    DestinationPath = reader.GetString(2),
-                    FileName = reader.GetString(3),
-                    Category = reader.GetString(4),
-                    Source = reader.GetString(5),
-                    Confidence = reader.IsDBNull(6) ? null : reader.GetDouble(6),
-                    UndoToken = reader.IsDBNull(7) ? null : reader.GetString(7),
-                    Quarantined = reader.GetInt32(8) == 1,
-                    Timestamp = DateTimeOffset.Parse(reader.GetString(9))
-                });
+                list.Add(ReadHistoryRow(reader));
             }
 
             return list;
         }
+    }
+
+    private static FileProcessedPayload ReadHistoryRow(SqliteDataReader reader)
+    {
+        return new FileProcessedPayload
+        {
+            Id = reader.GetString(0),
+            OriginalPath = reader.GetString(1),
+            DestinationPath = reader.GetString(2),
+            FileName = reader.GetString(3),
+            Category = reader.GetString(4),
+            Source = reader.GetString(5),
+            Confidence = reader.IsDBNull(6) ? null : reader.GetDouble(6),
+            UndoToken = reader.IsDBNull(7) ? null : reader.GetString(7),
+            Quarantined = reader.GetInt32(8) == 1,
+            Timestamp = DateTimeOffset.Parse(reader.GetString(9))
+        };
     }
 
     public List<MalwareDetectedPayload> GetQuarantineEvents(int limit = 50)

@@ -9,6 +9,7 @@ import { TitleBar } from './components/TitleBar'
 import { fadeIn, pageVariants } from './lib/motion'
 import { isNativeHostAvailable, nativeBridge, subscribe } from './services/nativeBridge'
 import type {
+  ActivityHistoryPayload,
   AutomationRule,
   FileProcessedPayload,
   MalwareDetectedPayload,
@@ -38,6 +39,8 @@ export default function App() {
   const [settings, setSettings] = useState<SettingsViewModel>(defaultSettings)
   const [rules, setRules] = useState<AutomationRule[]>([])
   const [history, setHistory] = useState<FileProcessedPayload[]>([])
+  const [historyTotal, setHistoryTotal] = useState(0)
+  const [loadingHistory, setLoadingHistory] = useState(false)
   const [quarantine, setQuarantine] = useState<MalwareDetectedPayload[]>([])
   const [monitoring, setMonitoring] = useState(true)
   const [connected, setConnected] = useState(false)
@@ -55,6 +58,7 @@ export default function App() {
           setSettings(snap.settings)
           setRules(snap.rules ?? [])
           setHistory(snap.history ?? [])
+          setHistoryTotal(snap.historyTotal ?? snap.history?.length ?? 0)
           setQuarantine(snap.quarantineEvents ?? [])
           setMonitoring(snap.settings.monitoringEnabled)
           break
@@ -66,7 +70,13 @@ export default function App() {
         }
         case 'FILE_PROCESSED': {
           const item = envelope.payload as FileProcessedPayload
-          setHistory((prev) => [item, ...prev.filter((h) => h.id !== item.id)].slice(0, 100))
+          setHistory((prev) => {
+            const exists = prev.some((h) => h.id === item.id)
+            if (!exists) {
+              setHistoryTotal((total) => total + 1)
+            }
+            return [item, ...prev.filter((h) => h.id !== item.id)]
+          })
           if (item.quarantined) {
             setQuarantine((prev) => [
               {
@@ -103,6 +113,23 @@ export default function App() {
         }
         case 'RULES_DISCOVERED':
           break
+        case 'ACTIVITY_HISTORY': {
+          const page = envelope.payload as ActivityHistoryPayload
+          setHistory((prev) => {
+            const seen = new Set(prev.map((item) => item.id))
+            const merged = [...prev]
+            for (const item of page.items ?? []) {
+              if (!seen.has(item.id)) {
+                seen.add(item.id)
+                merged.push(item)
+              }
+            }
+            return merged
+          })
+          setHistoryTotal(page.total ?? 0)
+          setLoadingHistory(false)
+          break
+        }
         default:
           break
       }
@@ -136,6 +163,12 @@ export default function App() {
     [],
   )
 
+  const loadMoreHistory = () => {
+    if (loadingHistory || history.length >= historyTotal) return
+    setLoadingHistory(true)
+    nativeBridge.getActivityHistory(history.length)
+  }
+
   return (
     <MotionConfig reducedMotion="user">
       <motion.div
@@ -152,7 +185,7 @@ export default function App() {
             onTabChange={setTab}
             tabs={tabs}
             monitoring={monitoring}
-            historyCount={history.length}
+            historyCount={historyTotal}
             rulesCount={rules.length}
             connected={connected}
           />
@@ -172,6 +205,9 @@ export default function App() {
                     monitoring={monitoring}
                     settings={settings}
                     history={history}
+                    historyTotal={historyTotal}
+                    loadingHistory={loadingHistory}
+                    onLoadMoreHistory={loadMoreHistory}
                     quarantine={quarantine}
                     onToggleMonitoring={(enabled) => {
                       setMonitoring(enabled)
@@ -179,7 +215,10 @@ export default function App() {
                     }}
                     onManualScan={() => nativeBridge.triggerManualScan()}
                     onUndo={(token) => nativeBridge.undoMove(token)}
-                    onClearActivity={() => nativeBridge.clearActivity()}
+                    onClearActivity={() => {
+                      nativeBridge.clearActivity()
+                      setHistoryTotal(0)
+                    }}
                   />
                 )}
                 {tab === 'rules' && (

@@ -65,7 +65,15 @@ export interface StateSnapshot {
   settings: SettingsViewModel
   rules: AutomationRule[]
   history: FileProcessedPayload[]
+  historyTotal: number
   quarantineEvents: MalwareDetectedPayload[]
+}
+
+export interface ActivityHistoryPayload {
+  items: FileProcessedPayload[]
+  total: number
+  offset: number
+  hasMore: boolean
 }
 
 export interface WatcherStatusPayload {
@@ -85,6 +93,7 @@ export type HostToUiType =
   | 'FOLDER_PICKED'
   | 'DISCOVER_RULES_PROGRESS'
   | 'RULES_DISCOVERED'
+  | 'ACTIVITY_HISTORY'
 
 export type UiToHostType =
   | 'SAVE_RULE'
@@ -104,6 +113,9 @@ export type UiToHostType =
   | 'APPLY_DISCOVERED_RULES'
   | 'CLEAR_ACTIVITY'
   | 'OPEN_IN_EXPLORER'
+  | 'GET_ACTIVITY_HISTORY'
+
+export const ACTIVITY_PAGE_SIZE = 50
 
 export interface IpcEnvelope<T = unknown> {
   type: string

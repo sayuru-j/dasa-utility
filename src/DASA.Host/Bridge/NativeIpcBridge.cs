@@ -95,11 +95,13 @@ public sealed class NativeIpcBridge
 
     public void EmitState()
     {
+        const int initialHistoryPage = 50;
         var snapshot = new StateSnapshotPayload
         {
             Settings = _settings.ToViewModel(),
             Rules = _rules.GetRules().ToList(),
-            History = _history.GetRecent(),
+            History = _history.GetPage(0, initialHistoryPage),
+            HistoryTotal = _history.GetCount(),
             QuarantineEvents = _history.GetQuarantineEvents()
         };
         Emit(IpcMessageTypes.StateSnapshot, snapshot);
@@ -375,6 +377,24 @@ public sealed class NativeIpcBridge
                     {
                         ExplorerHelper.Open(open.Path, open.SelectFile);
                     }
+                    break;
+                }
+
+                case IpcMessageTypes.GetActivityHistory:
+                {
+                    var request = payloadElement?.Deserialize<ActivityHistoryRequestPayload>(JsonOptions)
+                                  ?? new ActivityHistoryRequestPayload();
+                    var limit = Math.Clamp(request.Limit, 1, 100);
+                    var offset = Math.Max(0, request.Offset);
+                    var total = _history.GetCount();
+                    var items = _history.GetPage(offset, limit);
+                    Emit(IpcMessageTypes.ActivityHistory, new ActivityHistoryPayload
+                    {
+                        Items = items,
+                        Total = total,
+                        Offset = offset,
+                        HasMore = offset + items.Count < total
+                    }, requestId);
                     break;
                 }
             }

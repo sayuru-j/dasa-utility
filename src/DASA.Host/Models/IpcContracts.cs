@@ -22,6 +22,7 @@ public static class IpcMessageTypes
     public const string ApplyDiscoveredRules = "APPLY_DISCOVERED_RULES";
     public const string ClearActivity = "CLEAR_ACTIVITY";
     public const string OpenInExplorer = "OPEN_IN_EXPLORER";
+    public const string GetActivityHistory = "GET_ACTIVITY_HISTORY";
 
     // Host → UI
     public const string FileProcessed = "FILE_PROCESSED";
@@ -35,6 +36,7 @@ public static class IpcMessageTypes
     public const string FolderPicked = "FOLDER_PICKED";
     public const string DiscoverRulesProgress = "DISCOVER_RULES_PROGRESS";
     public const string RulesDiscovered = "RULES_DISCOVERED";
+    public const string ActivityHistory = "ACTIVITY_HISTORY";
 }
 
 public sealed class IpcEnvelope
@@ -113,6 +115,7 @@ public sealed class StateSnapshotPayload
     public SettingsViewModel Settings { get; set; } = new();
     public List<AutomationRule> Rules { get; set; } = [];
     public List<FileProcessedPayload> History { get; set; } = [];
+    public int HistoryTotal { get; set; }
     public List<MalwareDetectedPayload> QuarantineEvents { get; set; } = [];
 }
 
@@ -175,4 +178,18 @@ public sealed class OpenInExplorerPayload
 {
     public string Path { get; set; } = string.Empty;
     public bool SelectFile { get; set; } = true;
+}
+
+public sealed class ActivityHistoryRequestPayload
+{
+    public int Offset { get; set; }
+    public int Limit { get; set; } = 50;
+}
+
+public sealed class ActivityHistoryPayload
+{
+    public List<FileProcessedPayload> Items { get; set; } = [];
+    public int Total { get; set; }
+    public int Offset { get; set; }
+    public bool HasMore { get; set; }
 }

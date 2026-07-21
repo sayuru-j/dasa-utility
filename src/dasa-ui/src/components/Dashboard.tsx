@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronRight, RefreshCw, RotateCcw, Trash2 } from 'lucide-react'
 import {
@@ -17,6 +17,9 @@ interface DashboardProps {
   monitoring: boolean
   settings: SettingsViewModel
   history: FileProcessedPayload[]
+  historyTotal: number
+  loadingHistory: boolean
+  onLoadMoreHistory: () => void
   quarantine: MalwareDetectedPayload[]
   onToggleMonitoring: (enabled: boolean) => void
   onManualScan: () => void
@@ -72,7 +75,7 @@ function ActivityItem({
     >
       <motion.button
         type="button"
-        className="flex w-full items-center gap-2 py-3 text-left transition-colors hover:bg-surface-elevated/40"
+        className="flex w-full items-center gap-1.5 py-2 text-left transition-colors hover:bg-surface-elevated/40"
         onClick={onToggle}
         aria-expanded={expanded}
         whileHover={{ backgroundColor: 'rgba(22, 22, 22, 0.4)' }}
@@ -83,21 +86,21 @@ function ActivityItem({
           transition={springSnappy}
           className="shrink-0 text-text-tertiary"
         >
-          <ChevronRight size={14} strokeWidth={1.5} />
+          <ChevronRight size={12} strokeWidth={1.5} />
         </motion.span>
-        <span className="min-w-0 flex-1 truncate text-sm">{item.fileName}</span>
-        <span className={`nothing-tag shrink-0 ${sourceClass}`}>{sourceLabel(item.source)}</span>
+        <span className="min-w-0 flex-1 truncate text-xs text-text-secondary">{item.fileName}</span>
+        <span className={`nothing-tag shrink-0 !px-1.5 !py-0.5 !text-[9px] ${sourceClass}`}>{sourceLabel(item.source)}</span>
         {item.quarantined && (
           <motion.span
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="nothing-tag nothing-tag-amsi shrink-0"
+            className="nothing-tag nothing-tag-amsi shrink-0 !px-1.5 !py-0.5 !text-[9px]"
           >
             Quarantine
           </motion.span>
         )}
         {!expanded && (
-          <span className="nothing-path-chip hidden truncate sm:inline">
+          <span className="nothing-path-chip hidden max-w-[9rem] truncate !px-1.5 !py-0.5 !text-[9px] sm:inline">
             → {shortDestination(item.destinationPath)}
           </span>
         )}
@@ -112,10 +115,10 @@ function ActivityItem({
             exit="exit"
             className="overflow-hidden border-t border-stroke bg-surface-alt/50"
           >
-            <div className="px-3 py-3 pl-8">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="px-3 py-2 pl-7">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <motion.div
-                  className="min-w-0 flex-1 space-y-2 font-mono text-[11px]"
+                  className="min-w-0 flex-1 space-y-1.5 font-mono text-[10px]"
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.06, ...springSnappy }}
@@ -143,7 +146,7 @@ function ActivityItem({
                 {item.undoToken && !item.quarantined && (
                   <motion.button
                     type="button"
-                    className="nothing-btn nothing-btn-ghost shrink-0"
+                    className="nothing-btn nothing-btn-ghost shrink-0 !px-2 !py-1 !text-[10px]"
                     onClick={(e) => {
                       e.stopPropagation()
                       onUndo(item.undoToken!)
@@ -154,7 +157,7 @@ function ActivityItem({
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
                   >
-                    <RotateCcw size={13} strokeWidth={1.5} />
+                    <RotateCcw size={11} strokeWidth={1.5} />
                     Undo
                   </motion.button>
                 )}
@@ -171,6 +174,9 @@ export function Dashboard({
   monitoring,
   settings,
   history,
+  historyTotal,
+  loadingHistory,
+  onLoadMoreHistory,
   quarantine,
   onToggleMonitoring,
   onManualScan,
@@ -180,6 +186,28 @@ export function Dashboard({
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
   const [confirmClear, setConfirmClear] = useState(false)
   const [scanning, setScanning] = useState(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const loadMoreRef = useRef<HTMLDivElement>(null)
+
+  const hasMore = history.length < historyTotal
+
+  useEffect(() => {
+    const root = scrollRef.current
+    const target = loadMoreRef.current
+    if (!root || !target || !hasMore || loadingHistory) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          onLoadMoreHistory()
+        }
+      },
+      { root, rootMargin: '120px', threshold: 0 },
+    )
+
+    observer.observe(target)
+    return () => observer.disconnect()
+  }, [hasMore, loadingHistory, onLoadMoreHistory, history.length])
 
   const toggleExpanded = (id: string) => {
     setExpandedIds((prev) => {
@@ -299,15 +327,15 @@ export function Dashboard({
           </div>
           <div className="flex items-center gap-2">
             <motion.span
-              key={history.length}
+              key={historyTotal}
               initial={{ scale: 1.2, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="nothing-tag nothing-tag-info"
+              className="nothing-tag nothing-tag-info !text-[9px]"
             >
-              {history.length} events
+              {historyTotal} sorted
             </motion.span>
             <AnimatePresence mode="wait">
-              {history.length > 0 && (
+              {historyTotal > 0 && (
                 confirmClear ? (
                   <motion.div
                     key="confirm"
@@ -358,9 +386,9 @@ export function Dashboard({
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
           <AnimatePresence mode="popLayout" initial={false}>
-            {history.length === 0 ? (
+            {historyTotal === 0 ? (
               <motion.p
                 key="empty"
                 initial={{ opacity: 0, y: 10 }}
@@ -383,6 +411,11 @@ export function Dashboard({
                     />
                   ))}
                 </AnimatePresence>
+                {hasMore && (
+                  <div ref={loadMoreRef} className="py-3 text-center font-mono text-[10px] text-text-tertiary">
+                    {loadingHistory ? 'Loading more…' : 'Scroll for more'}
+                  </div>
+                )}
               </motion.ul>
             )}
           </AnimatePresence>
