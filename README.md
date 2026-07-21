@@ -6,7 +6,9 @@
 
 An **open-source passion project**, built for fun. Use it, fork it, break it, improve it — contributions welcome.
 
-**Author:** Sayuru .J Silva
+**Author:** [Sayuru .J Silva](https://github.com/sayuru-j)  
+**GitHub:** [sayuru-j](https://github.com/sayuru-j)  
+**Repository:** [sayuru-j/dasa-utility](https://github.com/sayuru-j/dasa-utility)
 
 ---
 
@@ -22,6 +24,24 @@ An **open-source passion project**, built for fun. Use it, fork it, break it, im
 - **Undo moves** — restore files from the activity feed
 - **Tray-first UX** — custom title bar, Nothing OS–inspired UI, Framer Motion animations
 - **Local-first** — settings, rules, and history stored on your machine; API key encrypted with Windows DPAPI
+
+## Screenshots
+
+### Dashboard — monitoring & activity
+
+![D.A.S.A dashboard with active monitoring and activity log](docs/media/data-activity-log.png)
+
+### Dashboard — empty state
+
+![D.A.S.A dashboard empty state](docs/media/dasa-dashboard.png)
+
+### Rules — automation & AI discovery
+
+![D.A.S.A rules view with AI rule discovery](docs/media/dasa-rules.png)
+
+### Settings
+
+![D.A.S.A settings — watch folder, sort root, AMSI, and taxonomy](docs/media/dasa-settings.png)
 
 ## Architecture
 
@@ -57,8 +77,8 @@ DASA.sln
 ### 1. Clone and install
 
 ```powershell
-git clone https://github.com/<your-org>/D.A.S.A.git
-cd D.A.S.A
+git clone https://github.com/sayuru-j/dasa-utility.git
+cd dasa-utility
 ```
 
 ### 2. Start the React UI
@@ -173,6 +193,12 @@ This is a hobby project, but PRs and issues are welcome. If you fix a bug or add
 1. Fork the repo and create a branch.
 2. Keep changes focused.
 3. Open a pull request with a short description of what changed and why.
+
+Project links:
+
+- GitHub profile: [github.com/sayuru-j](https://github.com/sayuru-j)
+- Repository: [github.com/sayuru-j/dasa-utility](https://github.com/sayuru-j/dasa-utility)
+- Issues: [github.com/sayuru-j/dasa-utility/issues](https://github.com/sayuru-j/dasa-utility/issues)
 
 No corporate process — just don’t break the build and have fun with it.
 

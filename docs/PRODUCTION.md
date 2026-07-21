@@ -2,7 +2,9 @@
 
 This document describes how to build, package, publish, and maintain **D.A.S.A** for production use and GitHub distribution.
 
-**Author:** Sayuru .J Silva  
+**Author:** [Sayuru .J Silva](https://github.com/sayuru-j)  
+**GitHub profile:** [github.com/sayuru-j](https://github.com/sayuru-j)  
+**Repository:** [github.com/sayuru-j/dasa-utility](https://github.com/sayuru-j/dasa-utility)  
 **License:** [MIT](../LICENSE) — open source, built for fun.
 
 ---
@@ -138,20 +140,34 @@ Test on a second user account or VM if possible to catch path/permission issues.
 
 ## Publishing to GitHub
 
-### 1. Create the repository
+### 1. Current repository
+
+This project is currently published at:
+
+- Repository: [github.com/sayuru-j/dasa-utility](https://github.com/sayuru-j/dasa-utility)
+- Owner profile: [github.com/sayuru-j](https://github.com/sayuru-j)
+
+Clone it with:
+
+```powershell
+git clone https://github.com/sayuru-j/dasa-utility.git
+cd dasa-utility
+```
+
+### 2. Push a new remote repository (optional)
 
 ```powershell
 git init
 git add .
 git commit -m "Initial release: D.A.S.A v1.0.0"
 git branch -M main
-git remote add origin https://github.com/<your-username>/D.A.S.A.git
+git remote add origin https://github.com/<your-username>/dasa-utility.git
 git push -u origin main
 ```
 
 Replace `<your-username>` with your GitHub username or organization.
 
-### 2. Recommended repository settings
+### 3. Recommended repository settings
 
 On GitHub → **Settings**:
 
@@ -162,7 +178,7 @@ On GitHub → **Settings**:
 | Actions | Enabled (for CI workflow) |
 | Security → Dependabot | Enable for NuGet + npm |
 
-### 3. Create a GitHub Release
+### 4. Create a GitHub Release
 
 1. Go to **Releases → Draft a new release**.
 2. Tag: `v1.0.0` (must match `Version` in csproj).
@@ -197,7 +213,7 @@ Download Automation & Security Assistant for Windows.
 **Author:** Sayuru .J Silva
 ```
 
-### 4. Using GitHub CLI (optional)
+### 5. Using GitHub CLI (optional)
 
 ```powershell
 gh release create v1.0.0 `
