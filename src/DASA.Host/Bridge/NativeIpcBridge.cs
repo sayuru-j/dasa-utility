@@ -24,6 +24,7 @@ public sealed class NativeIpcBridge
     private readonly FileProcessorService _processor;
     private readonly HistoryStore _history;
     private readonly TrayIconManager _tray;
+    private readonly MoveNotificationOverlayService _moveNotifications;
     private readonly IWindowHost _window;
     private readonly RuleDiscoveryService _discovery;
     private bool _attached;
@@ -37,6 +38,7 @@ public sealed class NativeIpcBridge
         FileProcessorService processor,
         HistoryStore history,
         TrayIconManager tray,
+        MoveNotificationOverlayService moveNotifications,
         IWindowHost window,
         RuleDiscoveryService discovery)
     {
@@ -47,6 +49,7 @@ public sealed class NativeIpcBridge
         _processor = processor;
         _history = history;
         _tray = tray;
+        _moveNotifications = moveNotifications;
         _window = window;
         _discovery = discovery;
     }
@@ -62,7 +65,10 @@ public sealed class NativeIpcBridge
             UiDispatcher.Invoke(() =>
             {
                 Emit(IpcMessageTypes.FileProcessed, payload);
-                _tray.NotifyFileProcessed(payload);
+                if (_settings.Current.ShowMoveNotificationsEnabled)
+                {
+                    _moveNotifications.Show(payload);
+                }
             });
         };
         _processor.MalwareDetected += (_, payload) =>
@@ -361,6 +367,16 @@ public sealed class NativeIpcBridge
                     _history.ClearActivity();
                     EmitState();
                     break;
+
+                case IpcMessageTypes.OpenInExplorer:
+                {
+                    var open = payloadElement?.Deserialize<OpenInExplorerPayload>(JsonOptions);
+                    if (!string.IsNullOrWhiteSpace(open?.Path))
+                    {
+                        ExplorerHelper.Open(open.Path, open.SelectFile);
+                    }
+                    break;
+                }
             }
         }
         catch (Exception ex)

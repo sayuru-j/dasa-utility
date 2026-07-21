@@ -90,6 +90,7 @@ public partial class MainWindow : Window, IWindowHost
                 _services.Processor,
                 _services.History,
                 _services.Tray,
+                _services.MoveNotifications,
                 this,
                 _services.Discovery);
             _bridge.Attach();

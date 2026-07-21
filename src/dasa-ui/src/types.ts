@@ -58,6 +58,7 @@ export interface SettingsViewModel {
   userTaxonomy: string
   waitTimeMinutes: number
   smartSubfoldersEnabled: boolean
+  showMoveNotificationsEnabled: boolean
 }
 
 export interface StateSnapshot {
@@ -102,6 +103,7 @@ export type UiToHostType =
   | 'DISCOVER_RULES'
   | 'APPLY_DISCOVERED_RULES'
   | 'CLEAR_ACTIVITY'
+  | 'OPEN_IN_EXPLORER'
 
 export interface IpcEnvelope<T = unknown> {
   type: string

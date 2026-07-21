@@ -26,6 +26,9 @@ export function SettingsPanel({ settings, onSave, onPickFolder }: SettingsPanelP
   const [userTaxonomy, setUserTaxonomy] = useState(settings.userTaxonomy)
   const [waitTimeMinutes, setWaitTimeMinutes] = useState(settings.waitTimeMinutes ?? 0)
   const [smartSubfoldersEnabled, setSmartSubfoldersEnabled] = useState(settings.smartSubfoldersEnabled ?? false)
+  const [showMoveNotificationsEnabled, setShowMoveNotificationsEnabled] = useState(
+    settings.showMoveNotificationsEnabled ?? true,
+  )
   const [savedFlash, setSavedFlash] = useState(false)
 
   useEffect(() => {
@@ -36,6 +39,7 @@ export function SettingsPanel({ settings, onSave, onPickFolder }: SettingsPanelP
     setUserTaxonomy(settings.userTaxonomy)
     setWaitTimeMinutes(settings.waitTimeMinutes ?? 0)
     setSmartSubfoldersEnabled(settings.smartSubfoldersEnabled ?? false)
+    setShowMoveNotificationsEnabled(settings.showMoveNotificationsEnabled ?? true)
   }, [settings])
 
   const save = () => {
@@ -47,6 +51,7 @@ export function SettingsPanel({ settings, onSave, onPickFolder }: SettingsPanelP
       userTaxonomy,
       waitTimeMinutes: Math.max(0, Math.min(1440, waitTimeMinutes)),
       smartSubfoldersEnabled,
+      showMoveNotificationsEnabled,
     }
     if (geminiApiKey.trim()) {
       payload.geminiApiKey = geminiApiKey.trim()
@@ -58,7 +63,18 @@ export function SettingsPanel({ settings, onSave, onPickFolder }: SettingsPanelP
   }
 
   const toggles = [
-    { label: 'Smart subfolders', value: smartSubfoldersEnabled, set: setSmartSubfoldersEnabled },
+    {
+      label: 'Move notifications',
+      value: showMoveNotificationsEnabled,
+      set: setShowMoveNotificationsEnabled,
+      hint: 'Show a screen-edge popup when a file is sorted, with a button to open the new location.',
+    },
+    {
+      label: 'Smart subfolders',
+      value: smartSubfoldersEnabled,
+      set: setSmartSubfoldersEnabled,
+      hint: 'e.g. Shrek.mp4 → Movies/Shrek/Shrek.mp4',
+    },
     { label: 'AMSI protection', value: amsiProtectionEnabled, set: setAmsiProtectionEnabled },
     { label: 'Auto-start', value: autoStartWithWindows, set: setAutoStartWithWindows },
   ]
@@ -194,7 +210,7 @@ export function SettingsPanel({ settings, onSave, onPickFolder }: SettingsPanelP
         ))}
 
         <motion.div className="flex flex-col gap-2" variants={fieldVariants}>
-          {toggles.map(({ label, value, set }, index) => (
+          {toggles.map(({ label, value, set, hint }, index) => (
             <motion.div
               key={label}
               className="flex items-center justify-between rounded border border-stroke px-3 py-2.5"
@@ -205,10 +221,8 @@ export function SettingsPanel({ settings, onSave, onPickFolder }: SettingsPanelP
             >
               <div>
                 <span className="text-sm text-text-secondary">{label}</span>
-                {label === 'Smart subfolders' && (
-                  <p className="mt-0.5 font-mono text-[10px] text-text-tertiary">
-                    e.g. Shrek.mp4 → Movies/Shrek/Shrek.mp4
-                  </p>
+                {hint && (
+                  <p className="mt-0.5 font-mono text-[10px] text-text-tertiary">{hint}</p>
                 )}
               </div>
               <motion.button

@@ -86,4 +86,5 @@ export const nativeBridge = {
   discoverRules: () => postToHost('DISCOVER_RULES'),
   applyDiscoveredRules: (rules: unknown[]) => postToHost('APPLY_DISCOVERED_RULES', { rules }),
   clearActivity: () => postToHost('CLEAR_ACTIVITY'),
+  openInExplorer: (path: string, selectFile = true) => postToHost('OPEN_IN_EXPLORER', { path, selectFile }),
 }

@@ -54,7 +54,8 @@ public sealed class SettingsService
             DarkMode = s.DarkMode,
             UserTaxonomy = s.UserTaxonomy,
             WaitTimeMinutes = s.WaitTimeMinutes,
-            SmartSubfoldersEnabled = s.SmartSubfoldersEnabled
+            SmartSubfoldersEnabled = s.SmartSubfoldersEnabled,
+            ShowMoveNotificationsEnabled = s.ShowMoveNotificationsEnabled
         };
     }
 
@@ -121,6 +122,11 @@ public sealed class SettingsService
             if (update.SmartSubfoldersEnabled is not null)
             {
                 _settings.SmartSubfoldersEnabled = update.SmartSubfoldersEnabled.Value;
+            }
+
+            if (update.ShowMoveNotificationsEnabled is not null)
+            {
+                _settings.ShowMoveNotificationsEnabled = update.ShowMoveNotificationsEnabled.Value;
             }
 
             EnsureFolders(_settings);
@@ -218,6 +224,7 @@ public sealed class SettingsService
         DarkMode = s.DarkMode,
         UserTaxonomy = s.UserTaxonomy,
         WaitTimeMinutes = s.WaitTimeMinutes,
-        SmartSubfoldersEnabled = s.SmartSubfoldersEnabled
+        SmartSubfoldersEnabled = s.SmartSubfoldersEnabled,
+        ShowMoveNotificationsEnabled = s.ShowMoveNotificationsEnabled
     };
 }

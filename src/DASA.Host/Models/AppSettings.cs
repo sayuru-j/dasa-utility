@@ -30,6 +30,9 @@ public sealed class AppSettings
     /// <summary>Create a title subfolder under the category, e.g. Movies/Shrek/Shrek.mp4.</summary>
     public bool SmartSubfoldersEnabled { get; set; }
 
+    /// <summary>Show in-app move toasts and tray notifications when files are sorted.</summary>
+    public bool ShowMoveNotificationsEnabled { get; set; } = true;
+
     /// <summary>Comma-separated folder taxonomy hints for Gemini.</summary>
     public string UserTaxonomy { get; set; } =
         "Documents, Invoices, Images, Videos, Archives, Installers, Spreadsheets, Presentations, Music, Other";

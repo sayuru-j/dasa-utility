@@ -29,6 +29,7 @@ const defaultSettings: SettingsViewModel = {
   userTaxonomy: 'Documents, Invoices, Images, Videos, Archives, Installers, Spreadsheets, Presentations, Music, Other',
   waitTimeMinutes: 0,
   smartSubfoldersEnabled: false,
+  showMoveNotificationsEnabled: true,
 }
 
 export default function App() {

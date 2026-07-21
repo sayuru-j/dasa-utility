@@ -64,6 +64,7 @@ public sealed class AppServices : IDisposable
     public FileProcessorService Processor { get; }
     public TrayIconManager Tray { get; }
     public RuleDiscoveryService Discovery { get; }
+    public MoveNotificationOverlayService MoveNotifications { get; }
 
     public AppServices(Action showWindow, Action exitApp)
     {
@@ -76,6 +77,7 @@ public sealed class AppServices : IDisposable
         Watcher = new FileWatcherService(() => Settings.Current.WaitTimeMinutes);
         Processor = new FileProcessorService(Settings, Amsi, Rules, Gemini, History);
         Tray = new TrayIconManager(showWindow, exitApp);
+        MoveNotifications = new MoveNotificationOverlayService(token => Processor.TryUndo(token, out _));
 
         Watcher.FileReady += (_, path) =>
         {
@@ -94,6 +96,7 @@ public sealed class AppServices : IDisposable
         Watcher.Dispose();
         Amsi.Dispose();
         Gemini.Dispose();
+        MoveNotifications.Dispose();
         Tray.Dispose();
     }
 }

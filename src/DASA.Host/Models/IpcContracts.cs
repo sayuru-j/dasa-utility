@@ -21,6 +21,7 @@ public static class IpcMessageTypes
     public const string DiscoverRules = "DISCOVER_RULES";
     public const string ApplyDiscoveredRules = "APPLY_DISCOVERED_RULES";
     public const string ClearActivity = "CLEAR_ACTIVITY";
+    public const string OpenInExplorer = "OPEN_IN_EXPLORER";
 
     // Host → UI
     public const string FileProcessed = "FILE_PROCESSED";
@@ -88,6 +89,7 @@ public sealed class SettingsUpdatePayload
     public string? UserTaxonomy { get; set; }
     public int? WaitTimeMinutes { get; set; }
     public bool? SmartSubfoldersEnabled { get; set; }
+    public bool? ShowMoveNotificationsEnabled { get; set; }
 }
 
 public sealed class SettingsViewModel
@@ -103,6 +105,7 @@ public sealed class SettingsViewModel
     public string UserTaxonomy { get; set; } = string.Empty;
     public int WaitTimeMinutes { get; set; }
     public bool SmartSubfoldersEnabled { get; set; }
+    public bool ShowMoveNotificationsEnabled { get; set; } = true;
 }
 
 public sealed class StateSnapshotPayload
@@ -166,4 +169,10 @@ public sealed class RulesDiscoveredPayload
 public sealed class ApplyDiscoveredRulesPayload
 {
     public List<DiscoveredRuleDto> Rules { get; set; } = [];
+}
+
+public sealed class OpenInExplorerPayload
+{
+    public string Path { get; set; } = string.Empty;
+    public bool SelectFile { get; set; } = true;
 }
