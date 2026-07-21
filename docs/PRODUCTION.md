@@ -341,7 +341,13 @@ Users with auto-start enabled replace files in their install folder while DASA i
 
 ```powershell
 # Full production build from repo root
-cd src\dasa-ui && npm ci && npm run build
-cd ..\DASA.Host && dotnet publish -c Release -r win-x64 -o .\publish
+.\deploy.ps1
+```
+
+Or manually:
+
+```powershell
+cd src\dasa-ui; npm ci; npm run build
+cd ..\DASA.Host; dotnet publish -c Release -r win-x64 -o .\publish
 Compress-Archive -Path .\publish\* -DestinationPath .\DASA-v1.0.0-win-x64.zip -Force
 ```

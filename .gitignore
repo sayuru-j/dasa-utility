@@ -4,6 +4,7 @@
 **/dist/
 **/node_modules/
 **/publish/
+**/artifacts/
 *.zip
 
 # IDE

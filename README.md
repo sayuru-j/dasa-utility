@@ -128,8 +128,24 @@ Closing the window minimizes to the tray. Use **Exit** from the tray menu to qui
 
 ## Production build
 
+From the repository root:
+
 ```powershell
-# From repository root
+.\deploy.ps1
+```
+
+This builds the UI, publishes `DASA.exe` to `src\DASA.Host\publish\`, and creates `artifacts\DASA-v<version>-win-x64.zip`.
+
+Options:
+
+```powershell
+.\deploy.ps1 -SelfContained    # include .NET runtime (larger zip)
+.\deploy.ps1 -SkipZip          # publish only, no zip
+```
+
+Manual steps (same result):
+
+```powershell
 cd src\dasa-ui
 npm ci
 npm run build
