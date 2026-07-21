@@ -140,6 +140,16 @@
     border-color: #e0e0e0;
   }
 
+  .nothing-btn-primary:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .nothing-btn-primary:disabled:hover {
+    background: var(--color-text);
+    border-color: var(--color-text);
+  }
+
   .nothing-btn-accent {
     background: var(--color-accent);
     color: #fff;
