@@ -15,7 +15,8 @@ All screenshots and the UI preview clip live in [`docs/media/`](media/).
 
 | File | Description | Used in |
 |------|-------------|---------|
-| [`demo.mp4`](media/demo.mp4) | UI preview — tab switching and layout | README preview section |
+| [`demo.gif`](media/demo.gif) | UI preview — tab switching (README) | README preview section |
+| [`demo.mp4`](media/demo.mp4) | Source recording for regenerating the GIF | — |
 | [`dasa-dashboard.png`](media/dasa-dashboard.png) | Dashboard empty / idle state | README screenshots |
 | [`dasa-rules.png`](media/dasa-rules.png) | Rules tab with list, editor, and AI discovery | README screenshots |
 | [`dasa-settings.png`](media/dasa-settings.png) | Settings — folders, features, save bar | README screenshots |
@@ -29,7 +30,12 @@ All screenshots and the UI preview clip live in [`docs/media/`](media/).
 
 ### UI preview clip
 
-[`demo.mp4`](media/demo.mp4) is a short silent loop for the README — tab switching and general UI look. Re-record when major layout or navigation changes. Keep it short (under ~15s); no need to convert to GIF (MP4 is smaller and sharper on GitHub).
+The README uses [`demo.gif`](media/demo.gif) because GitHub does not render `<video>` tags from repo paths. Keep [`demo.mp4`](media/demo.mp4) as the source; regenerate the GIF after re-recording:
+
+```powershell
+ffmpeg -y -i docs/media/demo.mp4 -vf "fps=12,scale=720:-1:flags=lanczos,palettegen=max_colors=128:stats_mode=diff" $env:TEMP\dasa-palette.png
+ffmpeg -y -i docs/media/demo.mp4 -i $env:TEMP\dasa-palette.png -lavfi "fps=12,scale=720:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=3" -loop 0 docs/media/demo.gif
+```
 
 ---
 

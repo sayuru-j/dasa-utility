@@ -29,7 +29,7 @@ An **open-source passion project**, built for fun. Use it, fork it, break it, im
 ## Preview
 
 <p align="center">
-  <video src="docs/media/demo.mp4" width="720" autoplay loop muted playsinline></video>
+  <img src="docs/media/demo.gif" alt="D.A.S.A UI preview" width="720" />
 </p>
 
 ## Screenshots

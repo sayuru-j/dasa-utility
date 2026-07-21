@@ -140,7 +140,8 @@ Attach or link assets from [`docs/media/`](../docs/media/) in GitHub Releases:
 
 | Asset | File |
 |-------|------|
-| UI preview | `docs/media/demo.mp4` |
+| UI preview | `docs/media/demo.gif` |
+| UI preview (source) | `docs/media/demo.mp4` |
 | Dashboard (empty) | `docs/media/dasa-dashboard.png` |
 | Rules | `docs/media/dasa-rules.png` |
 | Settings | `docs/media/dasa-settings.png` |
