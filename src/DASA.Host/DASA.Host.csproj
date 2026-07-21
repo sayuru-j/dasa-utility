@@ -1,0 +1,61 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <RootNamespace>DASA.Host</RootNamespace>
+    <AssemblyName>DASA</AssemblyName>
+    <Version>1.0.0</Version>
+    <Product>D.A.S.A</Product>
+    <Description>Download Automation &amp; Security Assistant — open-source, built for fun.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <ApplicationIcon>..\dasa-ui\public\icon.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.10" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4078.44" />
+    <!-- Override transitive SQLitePCLRaw 2.1.11 (GHSA-2m69-gcr7-jv3q / CVE-2025-6965) -->
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.53.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\dasa-ui\public\icon.ico" Link="Assets\icon.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <!-- Copy Vite production build into output/ui when present -->
+  <Target Name="CopyUiDist" AfterTargets="Build">
+    <PropertyGroup>
+      <_UiDistRoot>$(MSBuildThisFileDirectory)..\dasa-ui\dist</_UiDistRoot>
+    </PropertyGroup>
+    <ItemGroup>
+      <UiDistFiles Include="$(_UiDistRoot)\**\*.*" Condition="Exists('$(_UiDistRoot)\index.html')" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(UiDistFiles)"
+      DestinationFiles="@(UiDistFiles->'$(OutputPath)ui\%(RecursiveDir)%(Filename)%(Extension)')"
+      SkipUnchangedFiles="true"
+      Condition="'@(UiDistFiles)' != ''" />
+  </Target>
+
+  <Target Name="CopyUiDistToPublish" AfterTargets="Publish">
+    <PropertyGroup>
+      <_UiDistRoot>$(MSBuildThisFileDirectory)..\dasa-ui\dist</_UiDistRoot>
+    </PropertyGroup>
+    <ItemGroup>
+      <UiDistFiles Include="$(_UiDistRoot)\**\*.*" Condition="Exists('$(_UiDistRoot)\index.html')" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(UiDistFiles)"
+      DestinationFiles="@(UiDistFiles->'$(PublishDir)ui\%(RecursiveDir)%(Filename)%(Extension)')"
+      SkipUnchangedFiles="true"
+      Condition="'@(UiDistFiles)' != '' and '$(PublishDir)' != ''" />
+  </Target>
+
+</Project>

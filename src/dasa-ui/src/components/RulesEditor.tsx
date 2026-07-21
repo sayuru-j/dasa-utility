@@ -1,0 +1,455 @@
+import { useEffect, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import {
+  closestCenter,
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { FolderOpen, GripVertical, Plus, Sparkles, Trash2 } from 'lucide-react'
+import { expandContent, fadeUp, pageVariants, scaleIn, springSnappy } from '../lib/motion'
+import { nativeBridge, subscribe } from '../services/nativeBridge'
+import type { AutomationRule, DiscoveredRule, RulesDiscoveredPayload } from '../types'
+
+interface RulesEditorProps {
+  rules: AutomationRule[]
+  onSave: (rule: AutomationRule) => void
+  onDelete: (id: string) => void
+  onReorder: (orderedIds: string[]) => void
+}
+
+function emptyRule(): AutomationRule {
+  return {
+    id: crypto.randomUUID().replaceAll('-', ''),
+    name: 'New Rule',
+    enabled: true,
+    priority: 0,
+    extension: '',
+    nameContains: '',
+    domainContains: '',
+    destinationFolder: '',
+  }
+}
+
+function SortableRuleRow({
+  rule,
+  selected,
+  onSelect,
+}: {
+  rule: AutomationRule
+  selected: boolean
+  onSelect: () => void
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: rule.id,
+  })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+  }
+
+  return (
+    <motion.div
+      ref={setNodeRef}
+      style={style}
+      layout
+      className={`flex items-center gap-2 rounded border px-2 py-2 ${
+        selected ? 'border-stroke-strong bg-surface-elevated' : 'border-stroke bg-surface'
+      }`}
+    >
+      <button
+        type="button"
+        className="cursor-grab text-text-tertiary active:cursor-grabbing"
+        {...attributes}
+        {...listeners}
+        aria-label="Drag to reorder"
+      >
+        <GripVertical size={14} strokeWidth={1.5} />
+      </button>
+      <button type="button" className="min-w-0 flex-1 text-left" onClick={onSelect}>
+        <div className="truncate text-sm">{rule.name}</div>
+        <div className="truncate font-mono text-[10px] text-text-tertiary">
+          {rule.extension || '*'} · {rule.destinationFolder || '—'}
+        </div>
+      </button>
+      <span className={`font-mono text-[10px] uppercase ${rule.enabled ? 'text-success' : 'text-text-tertiary'}`}>
+        {rule.enabled ? 'On' : 'Off'}
+      </span>
+    </motion.div>
+  )
+}
+
+export function RulesEditor({ rules, onSave, onDelete, onReorder }: RulesEditorProps) {
+  const [localRules, setLocalRules] = useState(rules)
+  const [selectedId, setSelectedId] = useState<string | null>(rules[0]?.id ?? null)
+  const [draft, setDraft] = useState<AutomationRule | null>(rules[0] ?? null)
+  const [discovering, setDiscovering] = useState(false)
+  const [discoverStatus, setDiscoverStatus] = useState('')
+  const [discovered, setDiscovered] = useState<DiscoveredRule[]>([])
+  const [discoverSummary, setDiscoverSummary] = useState('')
+  const [selectedDiscovered, setSelectedDiscovered] = useState<Set<string>>(new Set())
+  const [discoverError, setDiscoverError] = useState('')
+
+  useEffect(() => {
+    setLocalRules(rules)
+    if (!selectedId && rules[0]) {
+      setSelectedId(rules[0].id)
+      setDraft(rules[0])
+    } else if (selectedId) {
+      const match = rules.find((r) => r.id === selectedId)
+      if (match) setDraft(match)
+    }
+  }, [rules, selectedId])
+
+  useEffect(() => {
+    return subscribe((envelope) => {
+      if (envelope.type === 'FOLDER_PICKED') {
+        const payload = envelope.payload as { path: string; purpose: string }
+        if (payload.purpose !== 'rule') return
+        setDraft((current) => (current ? { ...current, destinationFolder: payload.path } : current))
+        return
+      }
+
+      if (envelope.type === 'DISCOVER_RULES_PROGRESS') {
+        const payload = envelope.payload as { phase: string; detail: string }
+        setDiscoverStatus(payload.detail)
+        return
+      }
+
+      if (envelope.type === 'RULES_DISCOVERED') {
+        const payload = envelope.payload as RulesDiscoveredPayload
+        setDiscovering(false)
+        setDiscoverStatus('')
+        setDiscoverError('')
+        setDiscoverSummary(payload.summary)
+        setDiscovered(payload.rules ?? [])
+        setSelectedDiscovered(new Set((payload.rules ?? []).map((r) => r.id)))
+        return
+      }
+
+      if (envelope.type === 'ERROR' && discovering) {
+        const payload = envelope.payload as { message?: string }
+        setDiscovering(false)
+        setDiscoverStatus('')
+        setDiscoverError(payload.message ?? 'Discovery failed.')
+      }
+    })
+  }, [discovering])
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  )
+
+  const onDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    const oldIndex = localRules.findIndex((r) => r.id === active.id)
+    const newIndex = localRules.findIndex((r) => r.id === over.id)
+    const next = arrayMove(localRules, oldIndex, newIndex).map((r, i) => ({ ...r, priority: i }))
+    setLocalRules(next)
+    onReorder(next.map((r) => r.id))
+  }
+
+  const createRule = () => {
+    const rule = emptyRule()
+    setDraft(rule)
+    setSelectedId(rule.id)
+  }
+
+  const startDiscovery = () => {
+    setDiscoverError('')
+    setDiscoverSummary('')
+    setDiscovered([])
+    setDiscovering(true)
+    setDiscoverStatus('Starting…')
+    nativeBridge.discoverRules()
+  }
+
+  const toggleDiscovered = (id: string) => {
+    setSelectedDiscovered((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const applyDiscovered = () => {
+    const toApply = discovered.filter((r) => selectedDiscovered.has(r.id))
+    if (toApply.length === 0) return
+    nativeBridge.applyDiscoveredRules(toApply)
+    setDiscovered([])
+    setDiscoverSummary('')
+    setSelectedDiscovered(new Set())
+  }
+
+  return (
+    <motion.div
+      className="mx-auto flex h-full min-h-0 max-w-4xl flex-col gap-5 overflow-y-auto"
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+    >
+      <motion.section
+        variants={scaleIn}
+        className="nothing-card border border-dashed border-stroke-strong p-5"
+      >
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0 flex-1">
+            <div className="mb-2 flex items-center gap-2">
+              <Sparkles size={14} className="text-accent" strokeWidth={1.5} />
+              <p className="nothing-label !text-accent">Beta</p>
+            </div>
+            <h2 className="text-sm font-medium">Discover existing rules via AI</h2>
+            <p className="mt-1.5 max-w-xl font-mono text-[11px] leading-relaxed text-text-tertiary">
+              Scans Downloads, sorted folders, Documents, and media libraries to infer how you
+              already organize files, then proposes matching automation rules.
+            </p>
+            {discoverStatus && (
+              <p className="mt-2 font-mono text-[11px] text-text-secondary">{discoverStatus}</p>
+            )}
+            {discoverError && (
+              <p className="mt-2 font-mono text-[11px] text-accent">{discoverError}</p>
+            )}
+          </div>
+          <motion.button
+            type="button"
+            className="nothing-btn nothing-btn-primary shrink-0"
+            disabled={discovering}
+            onClick={startDiscovery}
+            whileHover={{ scale: discovering ? 1 : 1.03 }}
+            whileTap={{ scale: discovering ? 1 : 0.97 }}
+          >
+            <motion.span
+              animate={discovering ? { rotate: 360 } : { rotate: 0 }}
+              transition={{ duration: 1.2, repeat: discovering ? Infinity : 0, ease: 'linear' }}
+            >
+              <Sparkles size={13} strokeWidth={1.5} />
+            </motion.span>
+            {discovering ? 'Discovering…' : 'Discover rules'}
+          </motion.button>
+        </div>
+
+        <AnimatePresence>
+          {discovered.length > 0 && (
+            <motion.div
+              variants={expandContent}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="overflow-hidden"
+            >
+              <div className="mt-5 border-t border-stroke pt-4">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <p className="font-mono text-[11px] text-text-secondary">{discoverSummary}</p>
+              <button
+                type="button"
+                className="nothing-btn nothing-btn-ghost !py-1"
+                onClick={applyDiscovered}
+                disabled={selectedDiscovered.size === 0}
+              >
+                Add selected ({selectedDiscovered.size})
+              </button>
+            </div>
+            <ul className="flex flex-col gap-2">
+              {discovered.map((rule, index) => (
+                <motion.li
+                  key={rule.id}
+                  initial={{ opacity: 0, x: -12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05, ...springSnappy }}
+                  className="flex gap-3 rounded border border-stroke bg-surface px-3 py-2.5"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedDiscovered.has(rule.id)}
+                    onChange={() => toggleDiscovered(rule.id)}
+                    className="mt-0.5 accent-accent"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-sm">{rule.name}</span>
+                      <span className="nothing-tag">{rule.extension || 'any'}</span>
+                      <span className="font-mono text-[10px] text-text-tertiary">
+                        {(rule.confidence * 100).toFixed(0)}%
+                      </span>
+                    </div>
+                    {rule.nameContains && (
+                      <p className="mt-0.5 font-mono text-[10px] text-text-tertiary">
+                        contains &quot;{rule.nameContains}&quot;
+                      </p>
+                    )}
+                    <p className="mt-1 truncate font-mono text-[10px] text-text-tertiary">
+                      → {rule.destinationFolder}
+                    </p>
+                    {rule.reason && (
+                      <p className="mt-1 text-[11px] text-text-secondary">{rule.reason}</p>
+                    )}
+                  </div>
+                </motion.li>
+              ))}
+            </ul>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.section>
+
+      <motion.div
+        className="grid gap-5 lg:grid-cols-[240px_1fr]"
+        variants={fadeUp}
+      >
+        <motion.section variants={fadeUp} className="nothing-card flex flex-col gap-2 p-3">
+          <div className="mb-1 flex items-center justify-between px-1">
+            <p className="nothing-label">Rules</p>
+            <button type="button" className="nothing-btn nothing-btn-ghost !px-2 !py-1" onClick={createRule}>
+              <Plus size={13} strokeWidth={1.5} />
+            </button>
+          </div>
+          {localRules.length === 0 ? (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="px-1 py-4 font-mono text-[11px] text-text-tertiary"
+            >
+              No rules yet.
+            </motion.p>
+          ) : (
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+              <SortableContext items={localRules.map((r) => r.id)} strategy={verticalListSortingStrategy}>
+                <div className="flex flex-col gap-1.5">
+                  {localRules.map((rule) => (
+                    <SortableRuleRow
+                      key={rule.id}
+                      rule={rule}
+                      selected={selectedId === rule.id}
+                      onSelect={() => {
+                        setSelectedId(rule.id)
+                        setDraft(rule)
+                      }}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+          )}
+        </motion.section>
+
+        <motion.section
+          layout
+          className="nothing-card p-5"
+          transition={springSnappy}
+        >
+          <AnimatePresence mode="wait">
+            {!draft ? (
+              <motion.p
+                key="empty"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                className="font-mono text-xs text-text-tertiary"
+              >
+                Select or create a rule.
+              </motion.p>
+            ) : (
+              <motion.div
+                key={draft.id}
+                initial={{ opacity: 0, x: 16 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -16 }}
+                transition={springSnappy}
+                className="flex flex-col gap-4"
+              >
+              <p className="nothing-label">Rule builder</p>
+              <label className="block">
+                <span className="nothing-label mb-1.5 block">Name</span>
+                <input
+                  className="nothing-input"
+                  value={draft.name}
+                  onChange={(e) => setDraft({ ...draft, name: e.target.value })}
+                />
+              </label>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block">
+                  <span className="nothing-label mb-1.5 block">Extension</span>
+                  <input
+                    className="nothing-input font-mono"
+                    value={draft.extension ?? ''}
+                    onChange={(e) => setDraft({ ...draft, extension: e.target.value })}
+                    placeholder=".pdf"
+                  />
+                </label>
+                <label className="block">
+                  <span className="nothing-label mb-1.5 block">Name contains</span>
+                  <input
+                    className="nothing-input font-mono"
+                    value={draft.nameContains ?? ''}
+                    onChange={(e) => setDraft({ ...draft, nameContains: e.target.value })}
+                    placeholder="Invoice"
+                  />
+                </label>
+              </div>
+              <label className="block">
+                <span className="nothing-label mb-1.5 block">Destination</span>
+                <div className="flex gap-2">
+                  <input
+                    className="nothing-input font-mono text-xs"
+                    value={draft.destinationFolder}
+                    onChange={(e) => setDraft({ ...draft, destinationFolder: e.target.value })}
+                  />
+                  <button
+                    type="button"
+                    className="nothing-btn nothing-btn-ghost shrink-0"
+                    onClick={() => nativeBridge.pickFolder('rule')}
+                    aria-label="Browse destination folder"
+                  >
+                    <FolderOpen size={13} strokeWidth={1.5} />
+                  </button>
+                </div>
+              </label>
+              <label className="flex items-center gap-2 text-sm text-text-secondary">
+                <input
+                  type="checkbox"
+                  checked={draft.enabled}
+                  onChange={(e) => setDraft({ ...draft, enabled: e.target.checked })}
+                  className="accent-accent"
+                />
+                Enabled
+              </label>
+              <div className="flex gap-2 pt-1">
+                <button
+                  type="button"
+                  className="nothing-btn nothing-btn-primary"
+                  onClick={() => {
+                    if (!draft.destinationFolder.trim()) return
+                    onSave(draft)
+                  }}
+                >
+                  Save
+                </button>
+                <button type="button" className="nothing-btn nothing-btn-ghost" onClick={() => onDelete(draft.id)}>
+                  <Trash2 size={13} strokeWidth={1.5} />
+                </button>
+              </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.section>
+      </motion.div>
+    </motion.div>
+  )
+}

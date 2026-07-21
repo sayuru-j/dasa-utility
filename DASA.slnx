@@ -1,0 +1,5 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DASA.Host/DASA.Host.csproj" />
+  </Folder>
+</Solution>

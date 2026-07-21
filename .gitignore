@@ -1,0 +1,26 @@
+# Build
+**/bin/
+**/obj/
+**/dist/
+**/node_modules/
+**/publish/
+*.zip
+
+# IDE
+.vs/
+.idea/
+.cursor/
+*.user
+*.suo
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# Secrets / local data (never commit)
+.env
+.env.*
+*.local
+
+# DASA runtime (if run from repo)
+AppData/
