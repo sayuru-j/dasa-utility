@@ -6,6 +6,7 @@ Documentation for **Download Automation & Security Assistant**.
 |----------|-------------|
 | [../README.md](../README.md) | Project overview, features, dev setup, IPC reference |
 | [PRODUCTION.md](PRODUCTION.md) | Production builds, GitHub releases, signing |
+| [BACKLOG.md](BACKLOG.md) | Planned fixes and improvements (not yet implemented) |
 
 ---
 
